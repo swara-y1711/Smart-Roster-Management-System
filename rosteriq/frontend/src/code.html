@@ -1,0 +1,799 @@
+<!DOCTYPE html>
+
+<html lang="en"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><meta content="web_dashboard" name="shell-type"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;family=Plus+Jakarta+Sans:wght@600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><style>@layer base{html,body{margin:0;padding:0;}body{overscroll-behavior:none;}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config = {
+    darkMode: "class",
+    theme: {
+      extend: {
+        "colors": {
+          "on-secondary-container": "#514f81",
+          "surface-container": "#eaedff",
+          "error": "#ba1a1a",
+          "on-primary-container": "#dad7ff",
+          "on-error-container": "#93000a",
+          "tertiary": "#004f64",
+          "on-primary-fixed": "#0f0069",
+          "outline": "#777587",
+          "secondary-fixed": "#e3dfff",
+          "surface-container-low": "#f2f3ff",
+          "on-error": "#ffffff",
+          "on-primary": "#ffffff",
+          "primary-fixed": "#e2dfff",
+          "surface-dim": "#d2d9f4",
+          "on-tertiary-fixed": "#001f29",
+          "surface-container-high": "#e2e7ff",
+          "primary-container": "#4f46e5",
+          "on-secondary-fixed": "#181445",
+          "on-background": "#131b2e",
+          "tertiary-container": "#006983",
+          "background": "#faf8ff",
+          "on-secondary-fixed-variant": "#444173",
+          "on-tertiary": "#ffffff",
+          "on-surface": "#131b2e",
+          "primary-fixed-dim": "#c3c0ff",
+          "on-surface-variant": "#464555",
+          "primary": "#3525cd",
+          "inverse-on-surface": "#eef0ff",
+          "on-primary-fixed-variant": "#3323cc",
+          "secondary-fixed-dim": "#c4c1fb",
+          "surface-container-highest": "#dae2fd",
+          "secondary-container": "#c7c3fe",
+          "inverse-primary": "#c3c0ff",
+          "on-tertiary-fixed-variant": "#004d62",
+          "surface-bright": "#faf8ff",
+          "error-container": "#ffdad6",
+          "secondary": "#5b598c",
+          "surface": "#faf8ff",
+          "surface-variant": "#dae2fd",
+          "tertiary-fixed-dim": "#81d1f0",
+          "surface-tint": "#4d44e3",
+          "outline-variant": "#c7c4d8",
+          "on-secondary": "#ffffff",
+          "inverse-surface": "#283044",
+          "surface-container-lowest": "#ffffff",
+          "tertiary-fixed": "#b9eaff",
+          "on-tertiary-container": "#a5e5ff"
+        },
+        "borderRadius": {
+          "DEFAULT": "0.125rem",
+          "lg": "0.25rem",
+          "xl": "0.5rem",
+          "full": "0.75rem"
+        },
+        "spacing": {
+          "space-xl": "2rem",
+          "space-md": "1rem",
+          "space-xs": "0.25rem",
+          "space-lg": "1.5rem",
+          "gutter-dense": "1rem",
+          "margin-mobile": "1rem",
+          "gutter": "1.5rem",
+          "space-sm": "0.5rem",
+          "margin": "2rem"
+        },
+        "fontFamily": {
+          "headline-md": [
+            "Plus Jakarta Sans"
+          ],
+          "table-header": [
+            "Inter"
+          ],
+          "label-badge": [
+            "Inter"
+          ],
+          "body-lg": [
+            "Inter"
+          ],
+          "headline-lg": [
+            "Plus Jakarta Sans"
+          ],
+          "headline-lg-mobile": [
+            "Plus Jakarta Sans"
+          ],
+          "kpi-display": [
+            "Plus Jakarta Sans"
+          ],
+          "body-md": [
+            "Inter"
+          ],
+          "headline-sm": [
+            "Plus Jakarta Sans"
+          ],
+          "nav-link": [
+            "Inter"
+          ],
+          "table-body": [
+            "Inter"
+          ]
+        },
+        "fontSize": {
+          "headline-md": [
+            "20px",
+            {
+              "lineHeight": "28px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "600"
+            }
+          ],
+          "table-header": [
+            "13px",
+            {
+              "lineHeight": "18px",
+              "letterSpacing": "0.02em",
+              "fontWeight": "600"
+            }
+          ],
+          "label-badge": [
+            "12px",
+            {
+              "lineHeight": "16px",
+              "letterSpacing": "0.04em",
+              "fontWeight": "700"
+            }
+          ],
+          "body-lg": [
+            "16px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-lg": [
+            "28px",
+            {
+              "lineHeight": "36px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "headline-lg-mobile": [
+            "24px",
+            {
+              "lineHeight": "32px",
+              "letterSpacing": "-0.01em",
+              "fontWeight": "700"
+            }
+          ],
+          "kpi-display": [
+            "32px",
+            {
+              "lineHeight": "40px",
+              "letterSpacing": "-0.02em",
+              "fontWeight": "700"
+            }
+          ],
+          "body-md": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ],
+          "headline-sm": [
+            "18px",
+            {
+              "lineHeight": "24px",
+              "fontWeight": "600"
+            }
+          ],
+          "nav-link": [
+            "15px",
+            {
+              "lineHeight": "22px",
+              "fontWeight": "500"
+            }
+          ],
+          "table-body": [
+            "14px",
+            {
+              "lineHeight": "20px",
+              "fontWeight": "400"
+            }
+          ]
+        }
+      },
+    },
+  }</script></head><body class="bg-surface font-body-md text-on-surface antialiased"><aside class="fixed left-0 top-0 h-screen w-64 bg-on-background z-50 flex flex-col justify-between px-5 py-6 overflow-y-auto"><div class="flex flex-col"><div class="flex items-center gap-3 mb-6"><div class="w-9 h-9 rounded-xl bg-primary-container flex items-center justify-center shadow-sm"><span class="material-symbols-outlined text-on-primary text-[20px]">grid_view</span></div><div><div class="font-headline-sm text-headline-sm text-on-primary tracking-tight">RosterIQ</div><div class="font-label-badge text-label-badge text-on-primary-container font-medium">Workforce Intelligence</div></div></div><div class="mb-6 bg-inverse-surface/60 rounded-xl p-2.5 flex items-center justify-between cursor-pointer hover:bg-inverse-surface transition-colors"><div class="flex items-center gap-2.5 min-w-0"><div class="w-2 h-2 rounded-full bg-tertiary-fixed"></div><div class="min-w-0"><div class="font-table-header text-table-header text-on-primary truncate">Enterprise Ops Hub</div><div class="font-label-badge text-[11px] text-surface-container-highest/70 leading-none truncate">Multi-Brand Roster</div></div></div><span class="material-symbols-outlined text-surface-container-highest text-[18px]">unfold_more</span></div><nav class="flex flex-col" data-active-classes="bg-primary-container text-on-primary font-headline-sm shadow-sm"><div class="font-label-badge text-[11px] font-semibold text-primary-fixed tracking-wider uppercase mb-2 mt-2">WORKSPACE</div><div class="flex flex-col space-y-1 mb-4"><a aria-current="page" class="rounded-xl px-3 py-2 flex items-center gap-3 transition-colors bg-primary-container text-on-primary font-headline-sm shadow-sm" data-path="dashboard" href="#"><span class="material-symbols-outlined text-[20px]">dashboard</span><span>Dashboard</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="roster-planner" href="#"><span class="material-symbols-outlined text-[20px]">calendar_month</span><span>Roster Planner</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center justify-between transition-colors font-body-md text-body-md" data-path="coverage-and-conflicts" href="#"><div class="flex items-center gap-3"><span class="material-symbols-outlined text-[20px]">warning</span><span>Coverage &amp; Conflicts</span></div><span class="font-label-badge text-label-badge bg-error-container text-on-error-container px-2 py-0.5 rounded-full font-bold">3</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="workforce-resilience" href="#"><span class="material-symbols-outlined text-[20px]">verified_user</span><span>Workforce Resilience</span></a></div><div class="font-label-badge text-[11px] font-semibold text-primary-fixed tracking-wider uppercase mb-2 mt-2">ORGANIZATION</div><div class="flex flex-col space-y-1 mb-4"><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="employees" href="#"><span class="material-symbols-outlined text-[20px]">group</span><span>Employees</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="brands" href="#"><span class="material-symbols-outlined text-[20px]">domain</span><span>Brands</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="processes" href="#"><span class="material-symbols-outlined text-[20px]">alt_route</span><span>Processes</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="pods-and-teams" href="#"><span class="material-symbols-outlined text-[20px]">hub</span><span>Pods &amp; Teams</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="availability-and-leaves" href="#"><span class="material-symbols-outlined text-[20px]">event_busy</span><span>Availability &amp; Leaves</span></a></div><div class="font-label-badge text-[11px] font-semibold text-primary-fixed tracking-wider uppercase mb-2 mt-2">DATA &amp; ANALYTICS</div><div class="flex flex-col space-y-1 mb-4"><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="csv-import-and-export" href="#"><span class="material-symbols-outlined text-[20px]">sync_alt</span><span>CSV Import &amp; Export</span></a><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="reports-and-analytics" href="#"><span class="material-symbols-outlined text-[20px]">bar_chart</span><span>Reports &amp; Analytics</span></a></div><div class="font-label-badge text-[11px] font-semibold text-primary-fixed tracking-wider uppercase mb-2 mt-2">SYSTEM</div><div class="flex flex-col space-y-1 mb-2"><a class="text-on-primary-container hover:bg-inverse-surface hover:text-on-primary rounded-xl px-3 py-2 flex items-center gap-3 transition-colors font-body-md text-body-md" data-path="settings" href="#"><span class="material-symbols-outlined text-[20px]">settings</span><span>Settings</span></a></div></nav></div><div class="pt-4 mt-auto"><div class="bg-inverse-surface/80 rounded-xl p-3 flex items-center justify-between"><div class="flex items-center gap-3 min-w-0"><div class="relative"><div class="w-9 h-9 rounded-full bg-primary flex items-center justify-center"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div><span class="absolute bottom-0 right-0 w-2.5 h-2.5 rounded-full bg-secondary-fixed"></span></div><div class="min-w-0"><div class="font-table-header text-table-header text-on-primary truncate">Sarah Chen</div><div class="font-label-badge text-[11px] text-surface-container-highest/70 truncate">VP of Operations</div></div></div><span class="material-symbols-outlined text-surface-container-highest text-[18px] cursor-pointer hover:text-on-primary transition-colors">more_vert</span></div></div></aside><div class="pl-64 flex flex-col min-h-screen"><header class="fixed top-0 left-64 right-0 h-16 bg-surface-container-lowest/90 backdrop-blur-xl z-40 px-8 flex items-center justify-between shadow-[0_1px_8px_rgba(0,0,0,0.04)]"><div class="flex items-center gap-2 font-body-md text-body-md text-on-surface-variant"><span class="hover:text-on-surface cursor-pointer transition-colors">Operations Hub</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="hover:text-on-surface cursor-pointer transition-colors">RosterIQ</span><span class="material-symbols-outlined text-[16px]">chevron_right</span><span class="text-on-surface font-semibold">Console</span></div><div class="flex items-center gap-4"><div class="relative w-80"><span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-on-surface-variant text-[18px]">search</span><input class="w-full h-10 pl-9 pr-12 bg-surface-container-low text-on-surface rounded-xl font-body-md text-body-md placeholder:text-on-surface-variant focus:outline-none focus:bg-surface-container-lowest" placeholder="Search employees, teams, shifts..." type="text"/><span class="absolute right-2.5 top-1/2 -translate-y-1/2 font-label-badge text-[11px] font-semibold text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded-lg">⌘K</span></div><button class="h-10 px-3.5 bg-surface-container-low text-on-surface hover:bg-surface-container rounded-xl flex items-center gap-2 font-body-md text-body-md transition-colors"><span class="material-symbols-outlined text-[18px] text-on-surface-variant">calendar_month</span><span>November 2024 (Active Cycle)</span><span class="material-symbols-outlined text-[16px] text-on-surface-variant">expand_more</span></button><button class="relative w-10 h-10 rounded-xl bg-surface-container-low text-on-surface-variant hover:text-on-surface hover:bg-surface-container flex items-center justify-center transition-colors"><span class="material-symbols-outlined text-[20px]">notifications</span><span class="absolute top-2 right-2 w-2 h-2 rounded-full bg-error"></span></button><button class="h-10 px-4 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-xl font-body-md text-body-md font-medium flex items-center gap-2 transition-colors"><span class="material-symbols-outlined text-[18px]">sync</span><span>Revalidate Schedule</span></button><button class="h-10 px-4 bg-primary-container hover:bg-primary text-on-primary rounded-xl font-body-md text-body-md font-medium flex items-center gap-2 shadow-sm transition-colors"><span class="material-symbols-outlined text-[18px]">add</span><span>Quick Action</span></button><div class="w-8 h-8 rounded-full bg-primary flex items-center justify-center ml-2"><span class="material-symbols-outlined text-on-primary text-[18px]">person</span></div></div></header><main class="w-full pt-16 bg-surface min-h-screen"><div class="max-w-[1600px] mx-auto p-8 lg:p-10"><div class="flex flex-col w-full">
+<!-- Top Operational Banner & Telemetry Header -->
+<section class="flex flex-col gap-6 mb-8">
+<div class="flex flex-col lg:flex-row lg:items-center justify-between gap-6">
+<div class="flex flex-col space-y-2">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface tracking-tight">Operations Overview</h1>
+<span class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-surface-container text-on-primary-fixed font-label-badge text-label-badge shadow-sm">
+<span class="relative flex h-2 w-2">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-container opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2 w-2 bg-primary-container"></span>
+</span>
+            Live Telemetry • Cycle: Nov 01 – Nov 30, 2024
+          </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant max-w-3xl leading-relaxed">
+          Real-time workforce health monitoring, shift solver status, and capacity distribution across operational pods.
+        </p>
+</div>
+<!-- Action Cluster -->
+<div class="flex flex-wrap items-center gap-3">
+<!-- Pod Filter Dropdown -->
+<div class="relative">
+<button class="h-10 px-4 bg-surface-container-lowest text-on-surface hover:bg-surface-container-low rounded-xl font-body-md text-body-md font-medium flex items-center gap-2.5 shadow-sm transition-all" id="podDropdownBtn">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">tune</span>
+<span>All Pods (6 Active)</span>
+<span class="material-symbols-outlined text-[16px] text-on-surface-variant">arrow_drop_down</span>
+</button>
+</div>
+<!-- Export CSV Button -->
+<button class="h-10 px-4 bg-surface-container-lowest hover:bg-surface-container-low text-on-surface rounded-xl font-body-md text-body-md font-medium flex items-center gap-2 shadow-sm transition-all">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">file_download</span>
+<span>Export Summary CSV</span>
+</button>
+<!-- Prominent Solver Action -->
+<button class="h-10 px-5 bg-primary-container hover:bg-primary text-on-primary rounded-xl font-headline-sm text-[14px] font-semibold flex items-center gap-2 shadow-md hover:shadow-lg transition-all">
+<span class="material-symbols-outlined text-[18px]">bolt</span>
+<span>Auto-Generate Roster (OR-Tools CP-SAT)</span>
+</button>
+</div>
+</div>
+</section>
+<!-- KPI Metric Overview Section (6 Columns Grid) -->
+<section class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-5 mb-10">
+<!-- Card 1: Total Workforce -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-table-header text-table-header text-on-surface-variant uppercase tracking-wider">Total Workforce</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-[18px]">badge</span>
+</div>
+</div>
+<div>
+<div class="font-kpi-display text-kpi-display text-on-surface font-bold tracking-tight">214</div>
+<div class="mt-2 flex items-center gap-2 font-label-badge text-label-badge text-on-surface-variant">
+<span class="w-1.5 h-1.5 rounded-full bg-secondary"></span>
+<span>198 Active</span>
+<span>•</span>
+<span class="text-secondary-fixed-variant">16 Onboarding</span>
+</div>
+</div>
+</div>
+<!-- Card 2: Active Brands -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-table-header text-table-header text-on-surface-variant uppercase tracking-wider">Active Brands</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-tertiary">
+<span class="material-symbols-outlined text-[18px]">store</span>
+</div>
+</div>
+<div>
+<div class="font-kpi-display text-kpi-display text-on-surface font-bold tracking-tight">8 Brands</div>
+<div class="mt-2 flex items-center gap-2 font-label-badge text-label-badge text-tertiary">
+<span class="material-symbols-outlined text-[14px]">check_circle</span>
+<span>24 Processes • 100% Configured</span>
+</div>
+</div>
+</div>
+<!-- Card 3: Monthly Coverage Rate -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-table-header text-table-header text-on-surface-variant uppercase tracking-wider">Monthly Coverage</span>
+<span class="font-label-badge text-label-badge bg-surface-container text-primary font-bold px-2 py-0.5 rounded-full">+1.4% vs tgt</span>
+</div>
+<div>
+<div class="font-kpi-display text-kpi-display text-on-surface font-bold tracking-tight">97.2%</div>
+<div class="mt-2 flex items-center justify-between font-label-badge text-label-badge text-on-surface-variant">
+<span>Target Baseline: 95.0%</span>
+<span class="text-primary font-semibold">Surplus</span>
+</div>
+</div>
+</div>
+<!-- Card 4: Unresolved Conflicts -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-table-header text-table-header text-on-error-container uppercase tracking-wider">Shift Conflicts</span>
+<div class="w-8 h-8 rounded-lg bg-error-container flex items-center justify-center text-on-error-container">
+<span class="material-symbols-outlined text-[18px]">warning</span>
+</div>
+</div>
+<div>
+<div class="font-kpi-display text-kpi-display text-on-error-container font-bold tracking-tight">2 Critical</div>
+<div class="mt-2 flex items-center gap-1.5 font-label-badge text-label-badge text-error">
+<span>1 Understaffed</span>
+<span>•</span>
+<span>1 Fatigue Drift</span>
+</div>
+</div>
+</div>
+<!-- Card 5: Off-Duty Today -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-table-header text-table-header text-on-surface-variant uppercase tracking-wider">Off-Duty Today</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container-low flex items-center justify-center text-secondary">
+<span class="material-symbols-outlined text-[18px]">beach_access</span>
+</div>
+</div>
+<div>
+<div class="font-kpi-display text-kpi-display text-on-surface font-bold tracking-tight">18 Staff</div>
+<div class="mt-2 flex items-center gap-2 font-label-badge text-label-badge text-on-surface-variant">
+<span class="px-2 py-0.5 rounded bg-surface-container text-on-secondary-fixed">10 WO</span>
+<span class="px-2 py-0.5 rounded bg-secondary-container text-on-secondary-fixed">8 Approved</span>
+</div>
+</div>
+</div>
+<!-- Card 6: Resilience Index -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm hover:shadow-md transition-shadow flex flex-col justify-between">
+<div class="flex items-center justify-between mb-3">
+<span class="font-table-header text-table-header text-on-surface-variant uppercase tracking-wider">Resilience Index</span>
+<div class="w-8 h-8 rounded-lg bg-surface-container flex items-center justify-center text-primary-container">
+<span class="material-symbols-outlined text-[18px]">security</span>
+</div>
+</div>
+<div>
+<div class="font-kpi-display text-kpi-display text-on-surface font-bold tracking-tight">91.4%</div>
+<div class="mt-2 flex items-center gap-1.5 font-label-badge text-label-badge text-tertiary">
+<span class="material-symbols-outlined text-[14px]">shield</span>
+<span>2 Low Redundancy Nodes</span>
+</div>
+</div>
+</div>
+</section>
+<!-- Main Operational Canvas (12-Column Grid) -->
+<div class="grid grid-cols-1 xl:grid-cols-12 gap-8 items-start">
+<!-- Left Column: Primary Telemetry (7 Columns) -->
+<div class="xl:col-span-7 flex flex-col space-y-8">
+<!-- Section 1: Daily Staffing Coverage vs Target -->
+<div class="bg-surface-container-lowest rounded-xl p-7 shadow-sm">
+<div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+<div>
+<div class="flex items-center gap-3">
+<h2 class="font-headline-md text-headline-md text-on-surface">Daily Staffing Coverage vs Target</h2>
+<span class="font-label-badge text-label-badge px-2.5 py-1 rounded bg-surface-container text-primary font-semibold">
+                Target: 95.0% Availability
+              </span>
+</div>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">30-day projection tracking solver adherence and surge allowances.</p>
+</div>
+<!-- Chart Legend -->
+<div class="flex items-center gap-4 font-label-badge text-label-badge text-on-surface-variant">
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-primary-container"></span>
+<span>Nominal Coverage</span>
+</div>
+<div class="flex items-center gap-1.5">
+<span class="w-3 h-3 rounded-sm bg-secondary"></span>
+<span>Peak Surge Buffer</span>
+</div>
+</div>
+</div>
+<!-- SVG Timeline Chart (Rendered directly) -->
+<div class="relative w-full bg-surface-container-low/50 rounded-xl p-4 overflow-hidden">
+<!-- Threshold Reference Line overlay -->
+<div class="absolute left-0 right-0 top-[38%] h-0.5 border-t border-dashed border-outline-variant z-10 pointer-events-none flex justify-end pr-4">
+<span class="bg-surface-container-lowest px-1.5 py-0.5 rounded text-[10px] font-label-badge font-bold text-on-surface-variant -mt-2">Target Line: 95%</span>
+</div>
+<svg class="w-full h-56 overflow-visible text-primary-container" preserveaspectratio="none" viewbox="0 0 740 220">
+<defs>
+<lineargradient id="primaryBarGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#4F46E5"></stop>
+<stop offset="100%" stop-color="#3525CD"></stop>
+</lineargradient>
+<lineargradient id="surgeBarGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#006983"></stop>
+<stop offset="100%" stop-color="#004F64"></stop>
+</lineargradient>
+<lineargradient id="alertBarGrad" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" stop-color="#BA1A1A"></stop>
+<stop offset="100%" stop-color="#93000A"></stop>
+</lineargradient>
+</defs>
+<!-- Grid horizontal faint markers -->
+<line stroke="#E2E8F0" stroke-width="1" x1="0" x2="740" y1="40" y2="40"></line>
+<line stroke="#E2E8F0" stroke-width="1" x1="0" x2="740" y1="90" y2="90"></line>
+<line stroke="#E2E8F0" stroke-width="1" x1="0" x2="740" y1="140" y2="140"></line>
+<line stroke="#E2E8F0" stroke-width="1" x1="0" x2="740" y1="190" y2="190"></line>
+<!-- Daily bars: 30 days of cycle -->
+<!-- D1 - D5 -->
+<rect fill="url(#primaryBarGrad)" height="135" rx="3" width="16" x="10" y="55"></rect>
+<rect fill="url(#primaryBarGrad)" height="140" rx="3" width="16" x="34" y="50"></rect>
+<rect fill="url(#primaryBarGrad)" height="142" rx="3" width="16" x="58" y="48"></rect>
+<rect fill="url(#primaryBarGrad)" height="130" rx="3" width="16" x="82" y="60"></rect>
+<rect fill="url(#primaryBarGrad)" height="138" rx="3" width="16" x="106" y="52"></rect>
+<!-- D6 - D10 -->
+<rect fill="url(#primaryBarGrad)" height="144" rx="3" width="16" x="130" y="46"></rect>
+<rect fill="url(#primaryBarGrad)" height="136" rx="3" width="16" x="154" y="54"></rect>
+<rect fill="url(#primaryBarGrad)" height="132" rx="3" width="16" x="178" y="58"></rect>
+<rect fill="url(#primaryBarGrad)" height="141" rx="3" width="16" x="202" y="49"></rect>
+<rect fill="url(#primaryBarGrad)" height="145" rx="3" width="16" x="226" y="45"></rect>
+<!-- D11 - D15 -->
+<rect fill="url(#primaryBarGrad)" height="138" rx="3" width="16" x="250" y="52"></rect>
+<rect fill="url(#primaryBarGrad)" height="128" rx="3" width="16" x="274" y="62"></rect>
+<rect fill="url(#primaryBarGrad)" height="140" rx="3" width="16" x="298" y="50"></rect>
+<!-- D14 Deficit Day -->
+<rect fill="url(#alertBarGrad)" height="92" rx="3" width="16" x="322" y="98"></rect>
+<rect fill="url(#primaryBarGrad)" height="137" rx="3" width="16" x="346" y="53"></rect>
+<!-- D16 - D20 -->
+<rect fill="url(#primaryBarGrad)" height="143" rx="3" width="16" x="370" y="47"></rect>
+<rect fill="url(#primaryBarGrad)" height="140" rx="3" width="16" x="394" y="50"></rect>
+<!-- D18 Fatigue Alert Day -->
+<rect fill="url(#alertBarGrad)" height="115" rx="3" width="16" x="418" y="75"></rect>
+<rect fill="url(#primaryBarGrad)" height="142" rx="3" width="16" x="442" y="48"></rect>
+<rect fill="url(#primaryBarGrad)" height="146" rx="3" width="16" x="466" y="44"></rect>
+<!-- D21 - D25 (Cyber Week Peak Surge Window) -->
+<rect fill="url(#primaryBarGrad)" height="150" rx="3" width="16" x="490" y="40"></rect>
+<rect fill="url(#surgeBarGrad)" height="158" rx="3" width="16" x="514" y="32"></rect>
+<rect fill="url(#surgeBarGrad)" height="166" rx="3" width="16" x="538" y="24"></rect>
+<rect fill="url(#surgeBarGrad)" height="170" rx="3" width="16" x="562" y="20"></rect>
+<rect fill="url(#surgeBarGrad)" height="162" rx="3" width="16" x="586" y="28"></rect>
+<!-- D26 - D30 -->
+<rect fill="url(#primaryBarGrad)" height="148" rx="3" width="16" x="610" y="42"></rect>
+<rect fill="url(#primaryBarGrad)" height="144" rx="3" width="16" x="634" y="46"></rect>
+<rect fill="url(#primaryBarGrad)" height="140" rx="3" width="16" x="658" y="50"></rect>
+<rect fill="url(#primaryBarGrad)" height="138" rx="3" width="16" x="682" y="52"></rect>
+<rect fill="url(#primaryBarGrad)" height="142" rx="3" width="16" x="706" y="48"></rect>
+<!-- Surge Window Bracket Tag -->
+<path d="M 514 12 L 602 12" fill="none" stroke="#004F64" stroke-dasharray="2 2" stroke-width="1.5"></path>
+<text fill="#004F64" font-family="Inter" font-size="9" font-weight="700" text-anchor="middle" x="558" y="8">CYBER WEEK SURGE</text>
+</svg>
+<!-- Day axis labels -->
+<div class="flex justify-between items-center px-2 pt-2 text-[11px] font-label-badge text-on-surface-variant">
+<span>Nov 01</span>
+<span>Nov 07</span>
+<span>Nov 14 (P1 Alert)</span>
+<span>Nov 21</span>
+<span class="text-tertiary font-bold">Nov 24-27 Peak Surge</span>
+<span>Nov 30</span>
+</div>
+</div>
+<!-- Chart Summary Footer -->
+<div class="mt-4 pt-4 flex flex-col sm:flex-row items-center justify-between gap-4 bg-surface-container-low px-5 py-3 rounded-lg">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary text-[20px]">analytics</span>
+<span class="font-body-md text-body-md text-on-surface">Average Daily Operational Surplus: <strong class="text-primary font-bold">+4.2%</strong> above statutory threshold.</span>
+</div>
+<span class="font-label-badge text-label-badge text-on-surface-variant">Simulation verified via OR-Tools</span>
+</div>
+</div>
+<!-- Section 2: Brand-wise Coverage Health & Process Integrity -->
+<div class="bg-surface-container-lowest rounded-xl p-7 shadow-sm">
+<div class="flex items-center justify-between mb-6">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">Brand-wise Coverage Health &amp; Process Integrity</h2>
+<p class="font-body-md text-body-md text-on-surface-variant mt-1">Multi-entity SLA adherence across client processes.</p>
+</div>
+<button class="font-body-md text-body-md text-primary font-semibold hover:text-primary-container transition-colors flex items-center gap-1">
+<span>Detailed Matrix</span>
+<span class="material-symbols-outlined text-[16px]">arrow_forward</span>
+</button>
+</div>
+<!-- Brand Coverage Rows -->
+<div class="flex flex-col space-y-3.5">
+<!-- Row 1: Solara Lifestyle -->
+<div class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4 min-w-[240px]">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary font-bold font-headline-sm">
+                SL
+              </div>
+<div>
+<div class="font-headline-sm text-[16px] text-on-surface">Solara Lifestyle</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">6 Active Processes (CS, Escalations, NDR, Returns)</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="flex-1 max-w-xs flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-badge text-label-badge text-on-surface-variant">
+<span>Coverage</span>
+<span class="font-bold text-on-surface">98.4%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 98.4%"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-surface-container text-primary font-label-badge text-label-badge font-bold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                Optimal
+              </span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 2: Kinetics Gear -->
+<div class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4 min-w-[240px]">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-secondary font-bold font-headline-sm">
+                KG
+              </div>
+<div>
+<div class="font-headline-sm text-[16px] text-on-surface">Kinetics Gear</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">5 Active Processes (Inbound, ACC, B2B Outbound)</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="flex-1 max-w-xs flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-badge text-label-badge text-on-surface-variant">
+<span>Coverage</span>
+<span class="font-bold text-on-surface">92.1%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-error h-full rounded-full" style="width: 92.1%"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-error-container text-on-error-container font-label-badge text-label-badge font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[13px]">warning</span>
+                1 Gap in ACC
+              </span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 3: Aura Botanicals -->
+<div class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4 min-w-[240px]">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-tertiary font-bold font-headline-sm">
+                AB
+              </div>
+<div>
+<div class="font-headline-sm text-[16px] text-on-surface">Aura Botanicals</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">4 Active Processes (Tier 1 Support, Chat, Email)</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="flex-1 max-w-xs flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-badge text-label-badge text-on-surface-variant">
+<span>Coverage</span>
+<span class="font-bold text-on-surface">99.1%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 99.1%"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-secondary-container text-on-secondary-fixed font-label-badge text-label-badge font-bold flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[13px]">verified</span>
+                Resilient
+              </span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 4: Terra Foods -->
+<div class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4 min-w-[240px]">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-primary font-bold font-headline-sm">
+                TF
+              </div>
+<div>
+<div class="font-headline-sm text-[16px] text-on-surface">Terra Foods</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">4 Active Processes (Perishables Hotline, Logistics)</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="flex-1 max-w-xs flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-badge text-label-badge text-on-surface-variant">
+<span>Coverage</span>
+<span class="font-bold text-on-surface">95.5%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 95.5%"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-surface-container text-primary font-label-badge text-label-badge font-bold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                Optimal
+              </span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Row 5: Velox Express -->
+<div class="bg-surface-container-low/60 hover:bg-surface-container-low transition-colors rounded-xl p-4 flex flex-col md:flex-row md:items-center justify-between gap-4">
+<div class="flex items-center gap-4 min-w-[240px]">
+<div class="w-10 h-10 rounded-xl bg-surface-container flex items-center justify-center text-tertiary-container font-bold font-headline-sm">
+                VE
+              </div>
+<div>
+<div class="font-headline-sm text-[16px] text-on-surface">Velox Express</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">5 Active Processes (Same-Day Dispatch, Fleet Ops)</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="flex-1 max-w-xs flex flex-col gap-1.5">
+<div class="flex items-center justify-between font-label-badge text-label-badge text-on-surface-variant">
+<span>Coverage</span>
+<span class="font-bold text-on-surface">96.8%</span>
+</div>
+<div class="w-full bg-surface-container rounded-full h-2 overflow-hidden">
+<div class="bg-primary-container h-full rounded-full" style="width: 96.8%"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="px-3 py-1 rounded-full bg-surface-container text-primary font-label-badge text-label-badge font-bold flex items-center gap-1.5">
+<span class="w-1.5 h-1.5 rounded-full bg-primary-container"></span>
+                Optimal
+              </span>
+<button class="text-on-surface-variant hover:text-on-surface transition-colors p-1">
+<span class="material-symbols-outlined text-[18px]">more_vert</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Right Column: Operational Alerts, Pod Resilience & Audit Stream (5 Columns) -->
+<div class="xl:col-span-5 flex flex-col space-y-8">
+<!-- Section 1: Critical Operational Alerts -->
+<div class="bg-surface-container-lowest rounded-xl p-7 shadow-sm">
+<div class="flex items-center justify-between mb-5">
+<div class="flex items-center gap-2.5">
+<h2 class="font-headline-md text-headline-md text-on-surface">Operational Alerts</h2>
+<span class="font-label-badge text-label-badge bg-error-container text-on-error-container font-bold px-2 py-0.5 rounded-full">
+              2 Actionable
+            </span>
+</div>
+<span class="font-label-badge text-[11px] text-on-surface-variant">Auto-detected by Solver</span>
+</div>
+<!-- Alert Cards Cluster -->
+<div class="flex flex-col space-y-4">
+<!-- Alert Card 1: Critical P1 Deficit -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm relative overflow-hidden">
+<!-- Left color accent bar -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-error"></div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-badge text-[11px] font-bold text-error uppercase tracking-wider">P1 - Headcount Deficit</span>
+<span class="font-label-badge text-label-badge text-on-surface-variant">Nov 14 • Night Shift</span>
+</div>
+<h3 class="font-headline-sm text-[16px] text-on-surface font-semibold mb-1">
+              Kinetics Gear • ACC Night Shift Gap
+            </h3>
+<p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed mb-4">
+              Minimum requirement is 3 certified operators. Currently only 2 rostered due to emergency medical leave approval.
+            </p>
+<div class="flex items-center gap-2.5">
+<button class="px-3.5 py-1.5 bg-primary-container hover:bg-primary text-on-primary rounded-lg font-label-badge text-[12px] font-semibold transition-colors flex items-center gap-1.5 shadow-sm">
+<span class="material-symbols-outlined text-[15px]">person_add</span>
+<span>Assign Backup (Elena Rostova)</span>
+</button>
+<button class="px-3 py-1.5 bg-surface-container-low hover:bg-surface-container text-on-surface-variant rounded-lg font-label-badge text-[12px] font-medium transition-colors">
+                Dismiss
+              </button>
+</div>
+</div>
+<!-- Alert Card 2: Fatigue Limit Breach -->
+<div class="bg-surface-container-lowest rounded-xl p-5 shadow-sm relative overflow-hidden">
+<!-- Left color accent bar -->
+<div class="absolute left-0 top-0 bottom-0 w-1.5 bg-tertiary-container"></div>
+<div class="flex items-center justify-between mb-2">
+<span class="font-label-badge text-[11px] font-bold text-tertiary-container uppercase tracking-wider">P2 - Fatigue Limit Breach</span>
+<span class="font-label-badge text-label-badge text-on-surface-variant">Nov 18 • Continuous Roster</span>
+</div>
+<h3 class="font-headline-sm text-[16px] text-on-surface font-semibold mb-1">
+              Marcus Vance • 7 Consecutive Shifts
+            </h3>
+<p class="font-body-md text-[13px] text-on-surface-variant leading-relaxed mb-4">
+              Rostered for 7 straight shifts without mandatory 24h rest period. Exceeds fatigue safety policy and maximum weekly hours.
+            </p>
+<div class="flex items-center gap-2.5">
+<button class="px-3.5 py-1.5 bg-surface-container hover:bg-secondary-container text-on-secondary-fixed rounded-lg font-label-badge text-[12px] font-semibold transition-colors flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[15px]">free_cancellation</span>
+<span>Insert Comp-Off</span>
+</button>
+<button class="px-3 py-1.5 bg-surface-container-low hover:bg-surface-container text-on-surface-variant rounded-lg font-label-badge text-[12px] font-medium transition-colors">
+                Rebalance Shift
+              </button>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 2: Pod Resilience & Allocation Summary -->
+<div class="bg-surface-container-lowest rounded-xl p-7 shadow-sm">
+<div class="flex items-center justify-between mb-5">
+<h2 class="font-headline-md text-headline-md text-on-surface">Pod Resilience &amp; Allocation</h2>
+<span class="font-label-badge text-label-badge text-on-surface-variant">Current Week</span>
+</div>
+<div class="space-y-4">
+<!-- Pod Alpha -->
+<div class="p-3.5 bg-surface-container-low/60 rounded-xl flex items-center justify-between">
+<div class="min-w-0 pr-3">
+<div class="font-headline-sm text-[15px] text-on-surface font-semibold truncate">Pod Alpha</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">Customer Care &amp; Inbound</div>
+</div>
+<div class="flex items-center gap-4 text-right">
+<div>
+<div class="font-headline-sm text-[14px] text-primary font-bold">96% Capacity</div>
+<div class="font-label-badge text-[11px] text-on-surface-variant">42 Staff • 3 On Leave</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-label-badge text-[11px] font-bold text-primary">
+                96%
+              </div>
+</div>
+</div>
+<!-- Pod Beta -->
+<div class="p-3.5 bg-surface-container-low/60 rounded-xl flex items-center justify-between">
+<div class="min-w-0 pr-3">
+<div class="font-headline-sm text-[15px] text-on-surface font-semibold truncate">Pod Beta</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">Logistics &amp; NDR Exception</div>
+</div>
+<div class="flex items-center gap-4 text-right">
+<div>
+<div class="font-headline-sm text-[14px] text-error font-bold">88% Capacity (Tight)</div>
+<div class="font-label-badge text-[11px] text-on-surface-variant">36 Staff • 4 On Leave</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-error-container flex items-center justify-center font-label-badge text-[11px] font-bold text-on-error-container">
+                88%
+              </div>
+</div>
+</div>
+<!-- Pod Gamma -->
+<div class="p-3.5 bg-surface-container-low/60 rounded-xl flex items-center justify-between">
+<div class="min-w-0 pr-3">
+<div class="font-headline-sm text-[15px] text-on-surface font-semibold truncate">Pod Gamma</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">VIP Concierge &amp; Retention</div>
+</div>
+<div class="flex items-center gap-4 text-right">
+<div>
+<div class="font-headline-sm text-[14px] text-primary font-bold">98% Capacity</div>
+<div class="font-label-badge text-[11px] text-on-surface-variant">32 Staff • 1 On Leave</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-label-badge text-[11px] font-bold text-primary">
+                98%
+              </div>
+</div>
+</div>
+<!-- Pod Delta -->
+<div class="p-3.5 bg-surface-container-low/60 rounded-xl flex items-center justify-between">
+<div class="min-w-0 pr-3">
+<div class="font-headline-sm text-[15px] text-on-surface font-semibold truncate">Pod Delta</div>
+<div class="font-table-body text-[12px] text-on-surface-variant">Marketplace Support</div>
+</div>
+<div class="flex items-center gap-4 text-right">
+<div>
+<div class="font-headline-sm text-[14px] text-primary font-bold">94% Capacity</div>
+<div class="font-label-badge text-[11px] text-on-surface-variant">30 Staff • 2 On Leave</div>
+</div>
+<div class="w-10 h-10 rounded-full bg-surface-container flex items-center justify-center font-label-badge text-[11px] font-bold text-primary">
+                94%
+              </div>
+</div>
+</div>
+</div>
+</div>
+<!-- Section 3: Automated Solver & Audit Log -->
+<div class="bg-surface-container-lowest rounded-xl p-7 shadow-sm">
+<div class="flex items-center justify-between mb-4">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-primary">history_edu</span>
+<h2 class="font-headline-md text-headline-md text-on-surface">Automated Engine Audit Log</h2>
+</div>
+<span class="font-label-badge text-label-badge text-on-surface-variant">Real-time</span>
+</div>
+<div class="space-y-3 font-table-body text-[13px]">
+<div class="p-3 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-primary text-[18px] mt-0.5">smart_toy</span>
+<div class="flex-1">
+<p class="text-on-surface font-medium leading-snug">CP-SAT Solver resolved 3 shift overlaps via automated rebalance</p>
+<span class="text-on-surface-variant text-[11px]">Today • 10:15 AM • Optimization took 412ms</span>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-secondary text-[18px] mt-0.5">verified_user</span>
+<div class="flex-1">
+<p class="text-on-surface font-medium leading-snug">Sarah Chen approved Comp-Off substitution for David Kim</p>
+<span class="text-on-surface-variant text-[11px]">Today • 09:30 AM • Manual Override Logged</span>
+</div>
+</div>
+<div class="p-3 rounded-lg bg-surface-container-low flex items-start gap-3">
+<span class="material-symbols-outlined text-tertiary text-[18px] mt-0.5">published_with_changes</span>
+<div class="flex-1">
+<p class="text-on-surface font-medium leading-snug">Solara Lifestyle SLA profile updated to 24/7 Coverage</p>
+<span class="text-on-surface-variant text-[11px]">Yesterday • 05:45 PM • System Policy Synced</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div>
+</div></div></main></div></body></html>
