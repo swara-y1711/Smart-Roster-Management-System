@@ -71,3 +71,4 @@ yarn-error.log*
 next-env.d.ts
 
 !rosteriq/frontend/.env.example
+!rosteriq/backend/.env.example
