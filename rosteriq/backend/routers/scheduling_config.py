@@ -269,9 +269,10 @@ def update_process_operating_override(
     db: Client = Depends(get_db),
 ) -> dict[str, Any]:
     _require_process(db, process_id)
+    update = payload.model_dump(exclude_unset=True, mode="json")
     rows = _execute(
         db.table("process_operating_overrides")
-        .update({"is_operating": payload.is_operating})
+        .update(update)
         .eq("process_id", str(process_id))
         .eq("operating_date", operating_date.isoformat()),
         "Process Operating Override",
@@ -456,7 +457,7 @@ def update_public_holiday(
     _require_organization(db, organization_id)
     rows = _execute(
         db.table("public_holidays")
-        .update(payload.model_dump())
+        .update(payload.model_dump(exclude_unset=True, mode="json"))
         .eq("organization_id", str(organization_id))
         .eq("holiday_date", holiday_date.isoformat()),
         "Public Holiday",

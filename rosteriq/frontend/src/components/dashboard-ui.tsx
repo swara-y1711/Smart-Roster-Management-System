@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import {
   ArrowLeftRight,
   BadgeCheck,
@@ -11,14 +11,12 @@ import {
   CalendarDays,
   CalendarX,
   ChevronRight,
-  ChevronsUpDown,
   FileDown,
   LayoutDashboard,
   LayoutGrid,
   LogOut,
   Menu,
   Network,
-  Plus,
   RefreshCw,
   Search,
   Settings,
@@ -41,7 +39,7 @@ export type DashboardSection =
   | "Coverage & Conflicts"
   | "Workforce Resilience"
   | "Operational Precision"
-  | "RosterIQ System";
+  | "Workforce Data";
 
 const iconMap: Record<string, LucideIcon> = {
   dashboard: LayoutDashboard,
@@ -68,34 +66,16 @@ const iconMap: Record<string, LucideIcon> = {
 
 const navGroups: { label: string; links: { label: string; icon: string; href?: string }[] }[] = [
   {
-    label: "Workspace",
+    label: "Operations",
     links: [
       { label: "Dashboard", icon: "dashboard", href: "/" },
       { label: "Roster Planner", icon: "calendar", href: "/roster-planner" },
       { label: "Coverage & Conflicts", icon: "alert", href: "/coverage-conflicts" },
       { label: "Workforce Resilience", icon: "shield", href: "/workforce-resilience" },
       { label: "Operational Precision", icon: "precision", href: "/operational-precision" },
-      { label: "RosterIQ System", icon: "system", href: "/rosteriq-system" },
+      { label: "Workforce Data", icon: "people", href: "/rosteriq-system" },
     ],
   },
-  {
-    label: "Organization",
-    links: [
-      { label: "Employees", icon: "people" },
-      { label: "Brands", icon: "brands" },
-      { label: "Processes", icon: "processes" },
-      { label: "Pods & Teams", icon: "pods" },
-      { label: "Availability & Leaves", icon: "leave" },
-    ],
-  },
-  {
-    label: "Data & Analytics",
-    links: [
-      { label: "CSV Import & Export", icon: "import" },
-      { label: "Reports & Analytics", icon: "reports" },
-    ],
-  },
-  { label: "System", links: [{ label: "Settings", icon: "settings" }] },
 ];
 
 export function Icon({ name, className = "" }: { name: string; className?: string }) {
@@ -142,16 +122,15 @@ function Sidebar({
               <span className="block text-[11px] font-medium text-[#dad7ff]">Workforce Intelligence</span>
             </span>
           </Link>
-          <button className="mb-6 flex w-full items-center justify-between rounded-xl bg-[#283044]/80 p-2.5 text-left hover:bg-[#343e56]">
+          <div className="mb-6 flex w-full items-center rounded-xl bg-[#283044]/80 p-2.5 text-left">
             <span className="flex min-w-0 items-center gap-2.5">
               <span className="h-2 w-2 shrink-0 rounded-full bg-[#b9eaff]" />
               <span className="min-w-0">
-                <span className="block truncate text-[13px] font-semibold">Operations Workspace</span>
-                <span className="block truncate text-[11px] text-[#c7c9d8]">Roster management</span>
+                <span className="block truncate text-[13px] font-semibold">RosterIQ Operations</span>
+                <span className="block truncate text-[11px] text-[#c7c9d8]">Workforce roster</span>
               </span>
             </span>
-            <ChevronsUpDown aria-hidden="true" className="h-[18px] w-[18px] text-[#dae2fd]" />
-          </button>
+          </div>
           <nav aria-label="Main navigation">
             {navGroups.map((group) => (
               <div key={group.label}>
@@ -228,7 +207,13 @@ export function DashboardShell({
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [signOutError, setSignOutError] = useState("");
   const router = useRouter();
-  const { client, user, profile, profileError } = useAuth();
+  const { client, user, profile, profileError, isLoading } = useAuth();
+
+  useEffect(() => {
+    if (!isLoading && !user) {
+      router.replace("/login");
+    }
+  }, [isLoading, router, user]);
 
   async function handleSignOut() {
     if (!client) {
@@ -293,19 +278,9 @@ export function DashboardShell({
           >
             <Bell aria-hidden="true" className="h-5 w-5" />
           </button>
-          <button
-            className="hidden h-10 items-center gap-2 rounded-xl bg-[#f2f3ff] px-3 text-[13px] font-medium text-[#131b2e] hover:bg-[#e2e7ff] xl:flex"
-          >
-            <RefreshCw aria-hidden="true" className="h-[18px] w-[18px] text-[#464555]" />
-            <span>Revalidate Schedule</span>
-          </button>
-          <button className="flex h-10 items-center gap-2 rounded-xl bg-[#4f46e5] px-3.5 text-[13px] font-semibold text-white shadow-sm hover:bg-[#3525cd]">
-            <Plus aria-hidden="true" className="h-[18px] w-[18px]" />
-            <span className="hidden sm:inline">Quick Action</span>
-          </button>
         </div>
       </header>
-      <main className="min-h-screen pt-16 lg:pl-[248px]">
+      <main className="pt-16 lg:pl-[248px]">
         <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8 xl:p-10">
           {(profileError || signOutError) && (
             <p
@@ -348,10 +323,12 @@ export function ActionButton({
   children,
   variant = "secondary",
   onClick,
+  disabled = false,
 }: {
   children: ReactNode;
   variant?: "primary" | "secondary" | "subtle";
   onClick?: () => void;
+  disabled?: boolean;
 }) {
   const style =
     variant === "primary"
@@ -361,8 +338,9 @@ export function ActionButton({
         : "bg-white text-[#131b2e] shadow-sm hover:bg-[#f2f3ff]";
   return (
     <button
-      className={`flex h-10 items-center gap-2 rounded-xl px-4 text-[12px] font-semibold transition-colors ${style}`}
+      className={`flex h-10 items-center gap-2 rounded-xl px-4 text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 ${style}`}
       onClick={onClick}
+      disabled={disabled}
       type="button"
     >
       {children}
@@ -394,23 +372,48 @@ export function Panel({
   action,
   children,
   className = "",
+  scroll = false,
+  height = "clamp(360px, 45vh, 460px)",
+  ariaLabel,
+  direction = "both",
 }: {
   title: string;
   subtitle?: string;
   action?: ReactNode;
   children: ReactNode;
   className?: string;
+  scroll?: boolean;
+  height?: string;
+  ariaLabel?: string;
+  direction?: "y" | "x" | "both";
 }) {
+  const scrollStyle = scroll ? {
+    overflowX: direction === "x" || direction === "both" ? "auto" : "hidden",
+    overflowY: direction === "y" || direction === "both" ? "auto" : "hidden",
+  } as const : undefined;
   return (
-    <section className={`rounded-xl bg-white p-5 shadow-sm sm:p-7 ${className}`}>
-      <div className="mb-5 flex flex-wrap items-start justify-between gap-3">
+    <section
+      className={`rounded-xl bg-white p-5 shadow-sm sm:p-7 ${scroll ? "flex flex-col overflow-hidden" : ""} ${className}`}
+      style={scroll ? { height } : undefined}
+    >
+      <div className={`mb-5 flex flex-wrap items-start justify-between gap-3 ${scroll ? "shrink-0" : ""}`}>
         <div>
           <h2 className="font-display text-[19px] font-semibold tracking-tight">{title}</h2>
           {subtitle && <p className="mt-1 text-[13px] text-[#464555]">{subtitle}</p>}
         </div>
         {action}
       </div>
-      {children}
+      {scroll ? (
+        <div
+          className="themed-scroll min-h-0 flex-1 overscroll-contain focus-visible:ring-2 focus-visible:ring-[#8e87ff] focus-visible:ring-offset-2"
+          style={scrollStyle}
+          tabIndex={0}
+          role="region"
+          aria-label={ariaLabel || `${title} content`}
+        >
+          {children}
+        </div>
+      ) : children}
     </section>
   );
 }

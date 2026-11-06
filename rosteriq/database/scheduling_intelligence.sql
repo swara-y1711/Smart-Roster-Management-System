@@ -1,6 +1,12 @@
 -- Additive scheduling structures for the existing RosterIQ Step 5 schema.
 -- Run after the core schema and roster_relationships.sql.
 
+alter table public.roster_assignments
+  drop constraint if exists roster_assignments_status_check;
+alter table public.roster_assignments
+  add constraint roster_assignments_status_check
+  check (status in ('scheduled', 'completed', 'cancelled', 'published'));
+
 create table if not exists public.process_operating_rules (
   process_id uuid primary key references public.processes (id) on delete cascade,
   operating_days smallint[] not null default array[0, 1, 2, 3, 4, 5, 6]::smallint[],

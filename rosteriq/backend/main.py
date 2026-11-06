@@ -16,6 +16,8 @@ from routers.roster_assignments import router as roster_assignments_router
 from routers.employee_pods import router as employee_pods_router
 from routers.scheduling import router as scheduling_router
 from routers.scheduling_config import router as scheduling_config_router
+from routers.sample_workforce import router as sample_workforce_router
+from routers.dashboard import router as dashboard_router
 
 app = FastAPI(
     title="RosterIQ API",
@@ -58,6 +60,8 @@ app.include_router(roster_assignments_router)
 app.include_router(employee_pods_router)
 app.include_router(scheduling_router)
 app.include_router(scheduling_config_router)
+app.include_router(sample_workforce_router)
+app.include_router(dashboard_router)
 
 @app.get("/", tags=["System"], summary="API Root")
 def root():

@@ -195,6 +195,23 @@ class RosterAssignmentUpdate(RosterIQBaseModel):
     assignment_date: Optional[date] = None
     status: Optional[str] = Field(None, max_length=50)
 
+class RosterAssignmentProposal(RosterIQBaseModel):
+    employee_id: UUID
+    shift_id: UUID
+    assignment_date: date
+
+class RosterAssignmentBatchSave(RosterIQBaseModel):
+    organization_id: UUID
+    year: int = Field(ge=2000, le=2200)
+    month: int = Field(ge=1, le=12)
+    assignments: list[RosterAssignmentProposal]
+    status: str = Field("scheduled", max_length=50)
+
+class RosterPublishRequest(RosterIQBaseModel):
+    organization_id: UUID
+    year: int = Field(ge=2000, le=2200)
+    month: int = Field(ge=1, le=12)
+
 class RosterAssignmentResponse(RosterAssignmentBase):
     id: UUID
     employee_id: UUID

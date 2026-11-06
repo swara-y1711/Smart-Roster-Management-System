@@ -125,6 +125,14 @@ class Conflict:
 
 
 @dataclass(frozen=True)
+class EmployeeDiagnostic:
+    employee_id: str
+    scheduled_assignments: int
+    eligible_requirement_slots: int
+    reason: str
+
+
+@dataclass(frozen=True)
 class Coverage:
     date: date
     brand_id: str
@@ -144,6 +152,7 @@ class ScheduleReport:
     coverage: tuple[Coverage, ...]
     conflicts: tuple[Conflict, ...]
     statistics: Mapping[str, int | float]
+    employee_diagnostics: tuple[EmployeeDiagnostic, ...] = ()
 
     @property
     def valid(self) -> bool:
@@ -521,6 +530,56 @@ def _unfilled_reason(
     return min(reasons, key=lambda explanation: (-reasons[explanation], explanation))
 
 
+def _employee_diagnostics(
+    data: ScheduleData,
+    demands: Sequence[tuple[date, Process, Optional[str], tuple[str, ...], int]],
+    assignments: Sequence[Assignment],
+    invalid_assignment_indexes: frozenset[int],
+) -> tuple[EmployeeDiagnostic, ...]:
+    assignments_by_employee: dict[str, list[Assignment]] = defaultdict(list)
+    for index, assignment in enumerate(assignments):
+        if index not in invalid_assignment_indexes:
+            assignments_by_employee[assignment.employee_id].append(assignment)
+
+    diagnostics: list[EmployeeDiagnostic] = []
+    for employee in sorted(data.employees.values(), key=lambda item: (item.name.casefold(), item.id)):
+        reasons: Counter[str] = Counter()
+        eligible_slots = 0
+        existing = assignments_by_employee.get(employee.id, [])
+        for day, process, _, shift_ids, _ in demands:
+            for shift_id in shift_ids:
+                shift = data.shifts.get(shift_id)
+                if shift is None:
+                    continue
+                issues = _assignment_issues(
+                    Assignment(employee.id, shift.id, day), data, existing
+                )
+                if issues:
+                    for _, explanation, _ in issues:
+                        reasons[explanation] += 1
+                else:
+                    eligible_slots += 1
+        scheduled = len(existing)
+        if scheduled:
+            reason = f"Scheduled in {scheduled} valid assignment(s)."
+        elif eligible_slots:
+            reason = (
+                f"Eligible for {eligible_slots} requirement slot(s), but the load-balanced "
+                "proposal did not select this employee."
+            )
+        elif reasons:
+            reason = min(reasons, key=lambda explanation: (-reasons[explanation], explanation))
+        else:
+            reason = "No operating shift or staffing requirement matches the employee's eligible pod."
+        diagnostics.append(EmployeeDiagnostic(
+            employee_id=employee.id,
+            scheduled_assignments=scheduled,
+            eligible_requirement_slots=eligible_slots,
+            reason=reason,
+        ))
+    return tuple(diagnostics)
+
+
 def _active_requirements(
     data: ScheduleData, first_day: date, last_day: date
 ) -> list[tuple[date, Process, Optional[str], tuple[str, ...], int]]:
@@ -713,11 +772,15 @@ def validate_roster(
         "unfilled_positions": max(0, total_required - total_filled),
         "employee_count": len({item.employee_id for item in assignments if item.employee_id in data.employees}),
     }
+    diagnostics = _employee_diagnostics(
+        data, demands, assignments, frozenset(invalid_indexes)
+    )
     return ScheduleReport(
         assignments=tuple(assignments),
         coverage=coverage,
         conflicts=tuple(conflicts),
         statistics=statistics,
+        employee_diagnostics=diagnostics,
     )
 
 

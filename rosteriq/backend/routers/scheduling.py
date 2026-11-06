@@ -399,6 +399,15 @@ def _report_response(
         "conflicts": conflicts,
         "warnings": [row for row in conflicts if row["severity"] == "warning"],
         "statistics": report.statistics,
+        "employee_diagnostics": [
+            {
+                "employee_id": item.employee_id,
+                "scheduled_assignments": item.scheduled_assignments,
+                "eligible_requirement_slots": item.eligible_requirement_slots,
+                "reason": item.reason,
+            }
+            for item in report.employee_diagnostics
+        ],
     }
 
 

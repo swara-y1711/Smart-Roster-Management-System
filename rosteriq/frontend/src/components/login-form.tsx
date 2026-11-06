@@ -5,31 +5,42 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { ArrowRight, CheckCircle2, LayoutGrid, LoaderCircle, ShieldCheck } from "lucide-react";
 import { useAuth } from "@/components/auth-provider";
-import { getSupabaseBrowserClient } from "@/lib/supabase/client";
 
 type FormMode = "welcome" | "login" | "register";
-type SupabaseClient = NonNullable<ReturnType<typeof getSupabaseBrowserClient>>;
+type SupabaseClient = NonNullable<ReturnType<typeof useAuth>["client"]>;
 
-async function saveManagerProfile(
+async function createManagerProfile(
   client: SupabaseClient,
   userId: string,
   fullName: string,
   email: string,
   employeeId: string,
 ) {
-  return client
+  const result = await client
     .from("manager_profiles")
-    .upsert(
-      {
-        id: userId,
-        full_name: fullName,
-        work_email: email,
-        employee_id: employeeId,
-      },
-      { onConflict: "id" },
-    )
+    .insert({
+      id: userId,
+      full_name: fullName,
+      work_email: email,
+      employee_id: employeeId,
+    })
     .select("id, full_name, work_email, employee_id, created_at")
     .single();
+
+  if (!result.error || result.error.code !== "23505") {
+    return result;
+  }
+
+  const { data, error } = await client
+    .from("manager_profiles")
+    .select("id, full_name, work_email, employee_id, created_at")
+    .eq("id", userId)
+    .maybeSingle();
+  if (error || data) {
+    return { data, error };
+  }
+
+  return result;
 }
 
 function getProfileErrorMessage(error: { code?: string; message: string }) {
@@ -47,10 +58,10 @@ export default function LoginForm() {
   const [noticeMessage, setNoticeMessage] = useState("");
 
   useEffect(() => {
-    if (!isLoading && user) {
+    if (!isLoading && user && !pending) {
       router.replace("/");
     }
-  }, [isLoading, router, user]);
+  }, [isLoading, pending, router, user]);
 
   function changeMode(nextMode: FormMode) {
     setErrorMessage("");
@@ -71,19 +82,34 @@ export default function LoginForm() {
     const formData = new FormData(event.currentTarget);
     const email = String(formData.get("email") ?? "").trim().toLowerCase();
     const password = String(formData.get("password") ?? "");
+
+    if (!email || !password) {
+      setErrorMessage("Enter your email and password.");
+      return;
+    }
+
+    const fullName = String(formData.get("fullName") ?? "").trim();
+    const confirmPassword = String(formData.get("confirmPassword") ?? "");
+    if (mode === "register") {
+      if (!fullName || !confirmPassword) {
+        setErrorMessage("Complete all required fields.");
+        return;
+      }
+      if (password.length < 8) {
+        setErrorMessage("Your password must be at least 8 characters.");
+        return;
+      }
+      if (password !== confirmPassword) {
+        setErrorMessage("The passwords do not match.");
+        return;
+      }
+    }
+
     setPending(true);
 
     try {
       if (mode === "register") {
-        const fullName = String(formData.get("fullName") ?? "").trim();
-        const employeeId = String(formData.get("employeeId") ?? "").trim();
-        const confirmPassword = String(formData.get("confirmPassword") ?? "");
-
-        if (password !== confirmPassword) {
-          setErrorMessage("The passwords do not match.");
-          return;
-        }
-
+        const employeeId = `manager-${crypto.randomUUID()}`;
         const { data, error } = await client.auth.signUp({
           email,
           password,
@@ -110,7 +136,7 @@ export default function LoginForm() {
           return;
         }
 
-        const { data: profile, error: profileError } = await saveManagerProfile(
+        const { data: profile, error: profileError } = await createManagerProfile(
           client,
           data.user.id,
           fullName,
@@ -129,6 +155,7 @@ export default function LoginForm() {
           );
           return;
         }
+
         await refreshProfile(data.user.id);
       } else {
         const { data, error } = await client.auth.signInWithPassword({ email, password });
@@ -137,24 +164,48 @@ export default function LoginForm() {
           return;
         }
 
-        const fullName = data.user.user_metadata.full_name;
-        const employeeId = data.user.user_metadata.employee_id;
-        if (
-          typeof fullName === "string" &&
-          fullName.trim() &&
-          typeof employeeId === "string" &&
-          employeeId.trim()
-        ) {
-          const { error: profileError } = await saveManagerProfile(
+        const { data: profile, error: profileError } = await client
+          .from("manager_profiles")
+          .select("id")
+          .eq("id", data.user.id)
+          .maybeSingle();
+        if (profileError) {
+          const { error: signOutError } = await client.auth.signOut();
+          setErrorMessage(
+            signOutError
+              ? `${profileError.message} Sign-out also failed: ${signOutError.message}`
+              : profileError.message,
+          );
+          return;
+        }
+
+        if (!profile) {
+          const metadataName = data.user.user_metadata.full_name;
+          const metadataEmployeeId = data.user.user_metadata.employee_id;
+          if (
+            typeof metadataName !== "string" ||
+            !metadataName.trim() ||
+            typeof metadataEmployeeId !== "string" ||
+            !metadataEmployeeId.trim()
+          ) {
+            const { error: signOutError } = await client.auth.signOut();
+            const message = "This account is not configured as the Operations Manager.";
+            setErrorMessage(
+              signOutError ? `${message} Sign-out also failed: ${signOutError.message}` : message,
+            );
+            return;
+          }
+
+          const { error: saveError } = await createManagerProfile(
             client,
             data.user.id,
-            fullName.trim(),
+            metadataName.trim(),
             email,
-            employeeId.trim(),
+            metadataEmployeeId.trim(),
           );
-          if (profileError) {
+          if (saveError) {
             const { error: signOutError } = await client.auth.signOut();
-            const message = getProfileErrorMessage(profileError);
+            const message = getProfileErrorMessage(saveError);
             setErrorMessage(
               signOutError
                 ? `Your login succeeded, but your manager profile could not be saved: ${message} Sign-out also failed: ${signOutError.message}`
@@ -162,8 +213,9 @@ export default function LoginForm() {
             );
             return;
           }
-          await refreshProfile(data.user.id);
         }
+
+        await refreshProfile(data.user.id);
       }
 
       router.replace("/");
@@ -211,7 +263,7 @@ export default function LoginForm() {
             <div className="rounded-2xl border border-[#e4e6f4] bg-white p-4">
               <ShieldCheck aria-hidden="true" className="mb-3 h-5 w-5 text-[#4f46e5]" />
               <p className="text-sm font-semibold text-[#131b2e]">Built for managers</p>
-              <p className="mt-1 text-xs leading-5 text-[#777587]">A focused workspace for Operations Managers.</p>
+              <p className="mt-1 text-xs leading-5 text-[#777587]">A focused roster view for Operations Managers.</p>
             </div>
           </div>
         </section>
@@ -221,10 +273,10 @@ export default function LoginForm() {
             <>
               <p className="text-sm font-semibold text-[#4f46e5]">Welcome to RosterIQ</p>
               <h2 className="mt-2 font-display text-2xl font-bold tracking-tight text-[#131b2e]">
-                Your operations workspace starts here.
+                Your operations overview starts here.
               </h2>
               <p className="mt-3 text-sm leading-6 text-[#777587]">
-                Sign in to continue to the Executive Dashboard, or create your manager account.
+                Sign in to continue to your workforce dashboard.
               </p>
               <button
                 type="button"
@@ -235,17 +287,17 @@ export default function LoginForm() {
                 Log in as Operations Manager
                 <ArrowRight aria-hidden="true" className="h-4 w-4" />
               </button>
-              <div className="mt-5 text-center text-sm text-[#777587]">
-                First time here?{" "}
+              <p className="mt-5 text-center text-sm text-[#777587]">
+                New to RosterIQ?{" "}
                 <button
                   type="button"
                   onClick={() => changeMode("register")}
                   disabled={!client || isLoading}
-                  className="font-semibold text-[#4f46e5] hover:text-[#3525cd] disabled:opacity-60"
+                  className="font-semibold text-[#4f46e5] hover:text-[#3525cd] disabled:cursor-not-allowed disabled:opacity-60"
                 >
-                  Create a manager account
+                  Create Account
                 </button>
-              </div>
+              </p>
             </>
           ) : (
             <>
@@ -262,42 +314,30 @@ export default function LoginForm() {
               </h2>
               <p className="mt-2 text-sm text-[#777587]">
                 {isRegistration
-                  ? "Set up your secure RosterIQ manager profile."
+                  ? "Set up your secure RosterIQ manager account."
                   : "Log in with your work email and password."}
               </p>
 
               <form className="mt-7 space-y-4" onSubmit={handleSubmit}>
                 {isRegistration && (
-                  <>
-                    <label className="block text-sm font-medium text-[#283044]">
-                      Full name
-                      <input
-                        autoComplete="name"
-                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dfe1ec] px-3 text-sm outline-none transition focus:border-[#4f46e5]"
-                        name="fullName"
-                        placeholder="Jordan Lee"
-                        required
-                      />
-                    </label>
-                    <label className="block text-sm font-medium text-[#283044]">
-                      Employee ID
-                      <input
-                        autoComplete="off"
-                        className="mt-1.5 h-11 w-full rounded-xl border border-[#dfe1ec] px-3 text-sm outline-none transition focus:border-[#4f46e5]"
-                        name="employeeId"
-                        placeholder="e.g. OPS-1042"
-                        required
-                      />
-                    </label>
-                  </>
+                  <label className="block text-sm font-medium text-[#283044]">
+                    Full Name
+                    <input
+                      autoComplete="name"
+                      className="mt-1.5 h-11 w-full rounded-xl border border-[#dfe1ec] px-3 text-sm outline-none transition focus:border-[#4f46e5]"
+                      name="fullName"
+                      required
+                      type="text"
+                    />
+                  </label>
                 )}
                 <label className="block text-sm font-medium text-[#283044]">
-                  Work email
+                  Email
                   <input
                     autoComplete="email"
                     className="mt-1.5 h-11 w-full rounded-xl border border-[#dfe1ec] px-3 text-sm outline-none transition focus:border-[#4f46e5]"
                     name="email"
-                    placeholder="you@company.com"
+                    placeholder="manager@work.com"
                     required
                     type="email"
                   />
@@ -305,7 +345,7 @@ export default function LoginForm() {
                 <label className="block text-sm font-medium text-[#283044]">
                   Password
                   <input
-                    autoComplete={isRegistration ? "new-password" : "current-password"}
+                    autoComplete="current-password"
                     className="mt-1.5 h-11 w-full rounded-xl border border-[#dfe1ec] px-3 text-sm outline-none transition focus:border-[#4f46e5]"
                     minLength={8}
                     name="password"
@@ -315,7 +355,7 @@ export default function LoginForm() {
                 </label>
                 {isRegistration && (
                   <label className="block text-sm font-medium text-[#283044]">
-                    Confirm password
+                    Confirm Password
                     <input
                       autoComplete="new-password"
                       className="mt-1.5 h-11 w-full rounded-xl border border-[#dfe1ec] px-3 text-sm outline-none transition focus:border-[#4f46e5]"
@@ -326,7 +366,6 @@ export default function LoginForm() {
                     />
                   </label>
                 )}
-
                 {errorMessage && (
                   <p
                     aria-live="polite"
@@ -339,23 +378,25 @@ export default function LoginForm() {
                 {noticeMessage && (
                   <p
                     aria-live="polite"
-                    className="rounded-xl bg-[#eaf8f3] px-3 py-2.5 text-sm text-[#176b4d]"
+                    className="rounded-xl bg-[#eefbf5] px-3 py-2.5 text-sm text-[#176b45]"
                     role="status"
                   >
                     {noticeMessage}
                   </p>
                 )}
-
                 <button
                   className="flex h-11 w-full items-center justify-center gap-2 rounded-xl bg-[#4f46e5] px-4 text-sm font-semibold text-white transition-colors hover:bg-[#3525cd] disabled:cursor-not-allowed disabled:opacity-60"
                   disabled={pending || !client}
                   type="submit"
                 >
                   {pending && <LoaderCircle aria-hidden="true" className="h-4 w-4 animate-spin" />}
-                  {pending ? "Please wait..." : isRegistration ? "Create account" : "Log in"}
+                  {pending
+                    ? "Please wait..."
+                    : isRegistration
+                      ? "Create Account"
+                      : "Log in"}
                 </button>
               </form>
-
               <p className="mt-6 text-center text-sm text-[#777587]">
                 {isRegistration ? "Already registered?" : "New to RosterIQ?"}{" "}
                 <button
@@ -363,7 +404,7 @@ export default function LoginForm() {
                   onClick={() => changeMode(isRegistration ? "login" : "register")}
                   className="font-semibold text-[#4f46e5] hover:text-[#3525cd]"
                 >
-                  {isRegistration ? "Log in" : "Create an account"}
+                  {isRegistration ? "Log in" : "Create Account"}
                 </button>
               </p>
             </>

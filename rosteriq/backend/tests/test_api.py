@@ -16,6 +16,36 @@ from database import get_supabase_client, DATABASE_URL
 
 client = TestClient(app)
 
+
+def _create_test_workspace(manager_id: str, name: str) -> str:
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "INSERT INTO public.organizations (name) VALUES (%s) RETURNING id;",
+                (name,),
+            )
+            organization_id = cur.fetchone()[0]
+            cur.execute(
+                """
+                INSERT INTO public.organization_members (organization_id, manager_id)
+                VALUES (%s, %s);
+                """,
+                (organization_id, manager_id),
+            )
+        conn.commit()
+    return str(organization_id)
+
+
+def _delete_test_workspace(organization_id: str) -> None:
+    with psycopg.connect(DATABASE_URL) as conn:
+        with conn.cursor() as cur:
+            cur.execute(
+                "DELETE FROM public.organizations WHERE id = %s;",
+                (organization_id,),
+            )
+        conn.commit()
+
+
 # Helper for test user management
 TEST_USER_A_EMAIL = f"test_mgr_a_{uuid.uuid4().hex[:8]}@example.com"
 TEST_USER_B_EMAIL = f"test_mgr_b_{uuid.uuid4().hex[:8]}@example.com"
@@ -23,7 +53,10 @@ TEST_USER_PASSWORD = "TestPassword123!"
 
 @pytest.fixture(scope="session")
 def auth_tokens():
-    """Sets up two test users to verify authentication and tenant isolation."""
+    """Sets up test managers and an internal workspace for access-isolation tests."""
+    if not DATABASE_URL:
+        pytest.skip("DATABASE_URL is required to provision test manager profiles.")
+
     supabase = get_supabase_client()
     created_user_ids = []
     tokens = {}
@@ -53,15 +86,21 @@ def auth_tokens():
             "headers": {"Authorization": f"Bearer {token}"}
         }
 
-        # Ensure manager profile exists
-        authed_sb = get_supabase_client()
-        authed_sb.postgrest.auth(token)
-        authed_sb.table("manager_profiles").upsert({
-            "id": user_id,
-            "full_name": f"Manager {label}",
-            "work_email": email,
-            "employee_id": emp_id
-        }).execute()
+        with psycopg.connect(DATABASE_URL) as conn:
+            with conn.cursor() as cur:
+                cur.execute(
+                    """
+                    INSERT INTO public.manager_profiles
+                        (id, full_name, work_email, employee_id)
+                    VALUES (%s, %s, %s, %s)
+                    ON CONFLICT (id) DO UPDATE SET
+                        full_name = EXCLUDED.full_name,
+                        work_email = EXCLUDED.work_email,
+                        employee_id = EXCLUDED.employee_id;
+                    """,
+                    (user_id, f"Manager {label}", email, emp_id),
+                )
+            conn.commit()
 
     yield tokens
 
@@ -71,6 +110,22 @@ def auth_tokens():
             with psycopg.connect(DATABASE_URL) as conn:
                 with conn.cursor() as cur:
                     for uid in created_user_ids:
+                        cur.execute(
+                            """
+                            DELETE FROM public.organizations
+                            WHERE id IN (
+                                SELECT organization_id
+                                FROM public.organization_members
+                                WHERE manager_id = %s
+                            )
+                            AND id <> (
+                                SELECT value::uuid
+                                FROM public.app_settings
+                                WHERE key = 'rosteriq.shared_organization_id'
+                            );
+                            """,
+                            (uid,),
+                        )
                         cur.execute("DELETE FROM public.manager_profiles WHERE id = %s;", (uid,))
                         cur.execute("DELETE FROM auth.users WHERE id = %s;", (uid,))
                 conn.commit()
@@ -114,6 +169,9 @@ class TestPublicEndpoints:
         assert "/scheduling/impact" in data["paths"]
         assert "/scheduling/coverage-requirements" in data["paths"]
         assert "/scheduling/operating-rules" in data["paths"]
+        assert "post" not in data["paths"]["/organizations"]
+        assert "patch" not in data["paths"]["/organizations/{id}"]
+        assert "delete" not in data["paths"]["/organizations/{id}"]
 
 
 class TestUnauthenticatedAccessRejected:
@@ -190,13 +248,10 @@ class TestCrudLifecycle:
         assert res_me.status_code == 200
         assert res_me.json()["employee_id"] == auth_tokens["user_a"]["employee_id"]
 
-        # 2. Create Organization
+        # 2. Workspaces are provisioned administratively, not through the API.
         org_name = f"Test Corp {uuid.uuid4().hex[:6]}"
-        res_org = client.post("/organizations", json={"name": org_name}, headers=headers_a)
-        assert res_org.status_code == 201
-        org = res_org.json()
-        org_id = org["id"]
-        assert org["name"] == org_name
+        org_id = _create_test_workspace(auth_tokens["user_a"]["user_id"], org_name)
+        assert client.post("/organizations", json={"name": org_name}, headers=headers_a).status_code == 405
 
         # 3. Read Organization
         res_get_org = client.get(f"/organizations/{org_id}", headers=headers_a)
@@ -227,16 +282,7 @@ class TestCrudLifecycle:
         )
         assert res_schedule_org_b.status_code == 404
 
-        # 4. Update Organization
-        res_patch_org = client.patch(
-            f"/organizations/{org_id}",
-            json={"name": f"{org_name} Updated"},
-            headers=headers_a
-        )
-        assert res_patch_org.status_code == 200
-        assert res_patch_org.json()["name"] == f"{org_name} Updated"
-
-        # 5. Create Brand
+        # 4. Create Brand
         brand_name = f"Brand {uuid.uuid4().hex[:4]}"
         res_brand = client.post(
             "/brands",
@@ -397,9 +443,9 @@ class TestCrudLifecycle:
         )
         assert res_unauth_brand.status_code in (403, 404)
 
-        # 17. Cleanup via Cascade Delete of Organization
-        res_del_org = client.delete(f"/organizations/{org_id}", headers=headers_a)
-        assert res_del_org.status_code == 200
+        # 17. Workspace deletion is not exposed to the manager API.
+        assert client.delete(f"/organizations/{org_id}", headers=headers_a).status_code == 405
+        _delete_test_workspace(org_id)
 
         # Confirm deleted
         res_check_org = client.get(f"/organizations/{org_id}", headers=headers_a)
@@ -424,14 +470,10 @@ class TestSchedulingConfigurationAndLiveScenarios:
             )
             return response.json() if response.content else None
 
-        for existing in request("get", "/organizations"):
-            if existing["name"].startswith("Scheduling Integration "):
-                request("delete", f"/organizations/{existing['id']}")
-
-        org = request("post", "/organizations", json={
-            "name": f"Scheduling Integration {uuid.uuid4().hex[:8]}"
-        }, expected=201)
-        org_id = org["id"]
+        org_id = _create_test_workspace(
+            auth_tokens["user_a"]["user_id"],
+            f"Scheduling Integration {uuid.uuid4().hex[:8]}",
+        )
 
         brand_single = request("post", "/brands", json={
             "organization_id": org_id,
@@ -791,6 +833,29 @@ class TestSchedulingConfigurationAndLiveScenarios:
             for conflict in revalidated["conflicts"]
         )
 
+        request("delete", f"/employee-availability/{availability['id']}")
+        restored_validation = request("post", "/scheduling/validate", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+            "assignments": assignments,
+        })
+        assert restored_validation["is_valid"]
+        saved = request("post", "/roster-assignments/validated", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+            "assignments": assignments,
+            "status": "scheduled",
+        }, expected=201)
+        assert len(saved) == len(assignments)
+        published = request("post", "/roster-assignments/publish", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+        })
+        assert published and all(row["status"] == "published" for row in published)
+
         request(
             "delete",
             preference_item_path,
@@ -809,7 +874,7 @@ class TestSchedulingConfigurationAndLiveScenarios:
         )
         request("delete", f"/scheduling/operating-rules/{process_single['id']}")
         request("delete", f"/scheduling/operating-rules/{process_multi['id']}")
-        request("delete", f"/organizations/{org_id}")
+        _delete_test_workspace(org_id)
 
 
 class TestValidationAndIntegrity:
@@ -867,11 +932,11 @@ class TestValidationAndIntegrity:
         )
         assert res.status_code in (404, 400, 403)
 
-    def test_empty_organization_name(self, auth_tokens):
+    def test_organization_creation_is_not_exposed(self, auth_tokens):
         headers = auth_tokens["user_a"]["headers"]
         res = client.post(
             "/organizations",
             json={"name": ""},
             headers=headers
         )
-        assert res.status_code == 422
+        assert res.status_code == 405

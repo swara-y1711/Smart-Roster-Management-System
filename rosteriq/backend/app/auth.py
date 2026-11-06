@@ -55,7 +55,14 @@ def get_current_user(token: str = Depends(get_token)) -> AuthenticatedUser:
 
 def get_db(token: str = Depends(get_token)) -> Client:
     """Returns a Supabase client scoped to the authenticated user's JWT to enforce RLS."""
-    return get_user_supabase_client(token)
+    client = get_user_supabase_client(token)
+    try:
+        # The SECURITY DEFINER RPC is idempotent and repairs a missing profile
+        # or shared-workspace membership before any RLS-scoped read occurs.
+        client.rpc("bootstrap_current_user", {}).execute()
+    except Exception as error:
+        logger.warning("RosterIQ user bootstrap failed: %s", error)
+    return client
 
 def get_current_user_and_db(
     user: AuthenticatedUser = Depends(get_current_user),

@@ -4,6 +4,67 @@ Apply `../database/scheduling_intelligence.sql` after the existing Supabase sche
 and `../database/roster_relationships.sql`. The migration only adds scheduling
 rules and preserves the existing roster tables and authenticated RLS model.
 
+## Default demo workforce
+
+`GET /sample-workforce` returns a read-only view of the existing Faker-generated
+CSV dataset for an authenticated manager. It does not import data, modify the
+database, or provide CSV upload functionality. Database-backed workforce and
+scheduling APIs remain available for managers with assigned records.
+
+`GET /dashboard` returns the manager's RLS-visible organization and workforce
+records without selecting a single organization or filtering employees by
+status, roster assignment, or availability.
+
+To import the repository's synthetic CSV dataset into an existing manager's
+workspace, run this from `backend/`:
+
+```powershell
+python import_faker_data.py --manager-id <manager_profiles.id>
+python import_faker_data.py --manager-id <manager_profiles.id> --apply
+```
+
+To preview the deterministic 50-employee Faker seed and its deletion scope,
+run:
+
+```powershell
+python seed_faker_data.py
+```
+
+The preview prints the configured Supabase URL, planned row counts, and the
+exact deterministic sample-row scope. Applying it is intentionally explicit:
+
+```powershell
+python seed_faker_data.py --manager-id <manager_profiles.id> --apply --confirm-wipe
+```
+
+The apply command deletes only sample-owned roster assignments, employee
+availability/skills/pod links, pod-scoped shifts, and employee rows before
+reseeding them. It does not touch Supabase Auth, organizations, brands,
+processes, pods, or scheduling configuration. The existing manager's
+organization memberships are reused; employee records do not map to Auth
+users, so no Auth users are created.
+
+After seeding, generate and sanity-check a November proposal with:
+
+```powershell
+python roster_sanity.py --organization-id <organization.id> --year 2026 --month 11
+```
+
+Rest and consecutive-day checks are reported as not configured unless the
+corresponding thresholds are supplied with `--minimum-rest-hours` and
+`--max-consecutive-days`.
+
+The first command validates and reports the planned rows only. The import uses
+stable UUIDs derived from source IDs, upserts dataset records without deleting
+existing rows, and links the CSV organizations to the specified existing
+manager. The existing schema requires UUIDs, a brand on each process, and
+pod-scoped shifts. Process-brand links are inferred from the CSV assignments
+(using the most frequent valid brand; ties are stable), while each global CSV
+shift is normalized for each employee pod it is assigned to. Roster assignments
+follow the employee's declared pod when the CSV assignment's process differs.
+One CSV weekly-off row becomes seven day-of-week availability rows so the
+existing scheduler can see the other six days as available.
+
 All endpoints require the existing Supabase bearer token. Requests use the
 authenticated Supabase client; organization data is read through RLS. Generated
 rosters are proposals and are not written or published.

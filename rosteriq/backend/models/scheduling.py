@@ -46,7 +46,14 @@ class OperatingOverrideCreate(SchedulingModel):
 
 
 class OperatingOverrideUpdate(SchedulingModel):
-    is_operating: bool
+    operating_date: Optional[date] = None
+    is_operating: Optional[bool] = None
+
+    @model_validator(mode="after")
+    def validate_update(self) -> "OperatingOverrideUpdate":
+        if self.operating_date is None and self.is_operating is None:
+            raise ValueError("Provide operating_date or is_operating.")
+        return self
 
 
 class CoverageRequirementCreate(SchedulingModel):
@@ -64,6 +71,7 @@ class CoverageRequirementCreate(SchedulingModel):
 
 
 class CoverageRequirementUpdate(SchedulingModel):
+    process_id: Optional[UUID] = None
     shift_id: Optional[UUID] = None
     target_date: Optional[date] = None
     day_of_week: Optional[int] = Field(default=None, ge=0, le=6)
@@ -76,7 +84,14 @@ class PublicHolidayCreate(SchedulingModel):
 
 
 class PublicHolidayUpdate(SchedulingModel):
-    name: str = Field(min_length=1, max_length=255)
+    holiday_date: Optional[date] = None
+    name: Optional[str] = Field(None, min_length=1, max_length=255)
+
+    @model_validator(mode="after")
+    def validate_update(self) -> "PublicHolidayUpdate":
+        if self.holiday_date is None and self.name is None:
+            raise ValueError("Provide holiday_date or name.")
+        return self
 
 
 class WeeklyOffCreate(SchedulingModel):
@@ -268,6 +283,13 @@ class SchedulingStatistics(SchedulingModel):
     employee_count: int
 
 
+class EmployeeDiagnosticResponse(SchedulingModel):
+    employee_id: str
+    scheduled_assignments: int
+    eligible_requirement_slots: int
+    reason: str
+
+
 class SchedulingResponse(SchedulingModel):
     organization_id: str
     is_valid: bool
@@ -279,6 +301,7 @@ class SchedulingResponse(SchedulingModel):
     conflicts: list[SchedulingConflictResponse]
     warnings: list[SchedulingConflictResponse]
     statistics: SchedulingStatistics
+    employee_diagnostics: list[EmployeeDiagnosticResponse] = Field(default_factory=list)
 
 
 class ImpactedAssignment(SchedulingModel):
