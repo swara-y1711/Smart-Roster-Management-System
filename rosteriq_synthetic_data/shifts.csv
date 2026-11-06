@@ -1,0 +1,4 @@
+shift_id,shift_name,start_time,end_time
+1,Morning,09:00,17:00
+2,General,10:00,18:00
+3,Evening,13:00,21:00

@@ -1,0 +1,41 @@
+pod_id,process_id,pod_name
+1,1,Voice Support
+2,1,Email Support
+3,2,Inbound Sales
+4,2,Outbound Sales
+5,3,Order Processing
+6,3,Returns
+7,4,Dispatch
+8,4,Delivery Coordination
+9,5,Voice Support
+10,5,Email Support
+11,6,Inbound Sales
+12,6,Outbound Sales
+13,7,Order Processing
+14,7,Returns
+15,8,Dispatch
+16,8,Delivery Coordination
+17,9,Voice Support
+18,9,Email Support
+19,10,Inbound Sales
+20,10,Outbound Sales
+21,11,Order Processing
+22,11,Returns
+23,12,Dispatch
+24,12,Delivery Coordination
+25,13,Voice Support
+26,13,Email Support
+27,14,Inbound Sales
+28,14,Outbound Sales
+29,15,Order Processing
+30,15,Returns
+31,16,Dispatch
+32,16,Delivery Coordination
+33,17,Voice Support
+34,17,Email Support
+35,18,Inbound Sales
+36,18,Outbound Sales
+37,19,Order Processing
+38,19,Returns
+39,20,Dispatch
+40,20,Delivery Coordination

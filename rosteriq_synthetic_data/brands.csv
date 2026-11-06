@@ -1,0 +1,11 @@
+brand_id,organization_id,brand_name,category
+1,1,Rodriguez Inc,Fashion
+2,1,Delgado-Harris,Beauty
+3,2,"Wright, Bush and Mcbride",Home & Lifestyle
+4,2,Ferguson-Carroll,Food & Beverage
+5,3,"Page, Holland and Thomas",Wellness
+6,3,Palmer-Johnson,Fashion
+7,4,Pena-Wright,Beauty
+8,4,Mccarthy PLC,Home & Lifestyle
+9,5,Simon Inc,Food & Beverage
+10,5,Wood-Perez,Wellness

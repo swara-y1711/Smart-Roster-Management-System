@@ -1,0 +1,36 @@
+employee_id,employee_code,employee_name,email,phone,organization_id,pod_id,designation,is_pod_lead
+1,EMP001,Theodore Sanders,urivers@example.com,+1-949-417-3216x71503,1,4,Operations Associate,True
+2,EMP002,Daniel Chavez,bparker@example.net,+1-473-952-0194x421,1,4,Operations Associate,False
+3,EMP003,Daniel Calhoun,lindafigueroa@example.org,(622)983-6708x16904,1,1,Operations Associate,False
+4,EMP004,Danielle Turner,holmesjeffrey@example.net,(248)211-5390x75589,1,3,Operations Associate,False
+5,EMP005,David Trevino,keith49@example.org,492-934-0689x02518,1,3,Operations Associate,False
+6,EMP006,Jesse Chavez,zachary62@example.net,400-431-2456,1,8,Operations Associate,False
+7,EMP007,Catherine Hicks,chancharles@example.org,+1-529-977-7376x43693,1,1,Operations Associate,False
+8,EMP008,Robin Owens,brandy33@example.com,(681)436-8180,2,15,Operations Associate,True
+9,EMP009,Christopher Thompson,durhamkurt@example.org,5338830680,2,11,Operations Associate,False
+10,EMP010,Maria Dennis,zrodriguez@example.com,711-316-4272x070,2,12,Operations Associate,False
+11,EMP011,Amber Lin MD,sdelgado@example.org,263.973.7844,2,16,Operations Associate,False
+12,EMP012,Matthew Murphy,nweaver@example.com,438-588-8151,2,9,Operations Associate,False
+13,EMP013,Paul Smith,romanjames@example.org,334.801.0069,2,12,Operations Associate,False
+14,EMP014,Matthew Taylor,geoffrey59@example.org,397.925.4910x00147,2,15,Operations Associate,False
+15,EMP015,Melissa Clark,carrieallen@example.org,970.862.4431x7716,3,17,Operations Associate,True
+16,EMP016,Natalie Oneill,vanessa60@example.org,+1-951-848-2790x32910,3,23,Operations Associate,False
+17,EMP017,Christine Brown,amberlogan@example.com,+1-696-219-3139x1972,3,19,Operations Associate,False
+18,EMP018,Mrs. Janice Ramirez,sean21@example.org,001-479-693-4233x9552,3,24,Operations Associate,False
+19,EMP019,Brenda Johnson,sherry80@example.org,+1-841-858-8719x5840,3,18,Operations Associate,False
+20,EMP020,Ashley Parks,stewartdanny@example.org,815-876-0587x11602,3,22,Operations Associate,False
+21,EMP021,Shawn Blair,harrisbryan@example.org,4223920889,3,20,Operations Associate,False
+22,EMP022,Pamela Farrell,llee@example.com,800.769.2061x686,4,25,Operations Associate,True
+23,EMP023,Christopher Johnson,jacksonalfred@example.com,3885543052,4,26,Operations Associate,False
+24,EMP024,Jeffrey Mcclure,ygreene@example.com,+1-549-296-6153x5803,4,28,Operations Associate,False
+25,EMP025,Richard Blake,lshaw@example.org,6789987156,4,28,Operations Associate,False
+26,EMP026,Richard Krueger,kathleenbrock@example.com,521-841-5465x8491,4,26,Operations Associate,False
+27,EMP027,Sandra Perez,brianavazquez@example.net,001-259-531-8869x659,4,31,Operations Associate,False
+28,EMP028,Amanda Allison,kaylagordon@example.net,454.362.6823x97997,4,28,Operations Associate,False
+29,EMP029,Christopher Frank,jimgay@example.org,001-864-327-6833x388,5,37,Operations Associate,True
+30,EMP030,Rachel Ramirez,pauljacobs@example.com,2023610648,5,39,Operations Associate,False
+31,EMP031,Leon Chen,vanessa89@example.com,(450)728-7734,5,39,Operations Associate,False
+32,EMP032,Linda Faulkner,zjones@example.com,001-518-538-1936x51222,5,37,Operations Associate,False
+33,EMP033,Chelsea Wood,jenniferguzman@example.com,(446)714-1350x4370,5,36,Operations Associate,False
+34,EMP034,Jacqueline Hill,jonathan51@example.net,557.474.8379x29120,5,36,Operations Associate,False
+35,EMP035,James Duarte,brian01@example.com,+1-645-495-4225x6315,5,34,Operations Associate,False

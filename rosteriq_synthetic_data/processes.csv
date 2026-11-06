@@ -1,0 +1,21 @@
+process_id,organization_id,process_name
+1,1,Customer Support
+2,1,Sales
+3,1,Order Management
+4,1,Logistics
+5,2,Customer Support
+6,2,Sales
+7,2,Order Management
+8,2,Logistics
+9,3,Customer Support
+10,3,Sales
+11,3,Order Management
+12,3,Logistics
+13,4,Customer Support
+14,4,Sales
+15,4,Order Management
+16,4,Logistics
+17,5,Customer Support
+18,5,Sales
+19,5,Order Management
+20,5,Logistics
