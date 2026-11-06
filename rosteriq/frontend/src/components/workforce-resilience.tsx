@@ -54,7 +54,9 @@ export default function WorkforceResilience() {
   const periodAssignments = data.assignments.filter((item) => item.assignment_date >= startDate && item.assignment_date <= endDate);
   const savedAssignmentsInMonth = data.assignments.some((item) => item.assignment_date.startsWith(startDate.slice(0, 7)));
   const selectedEmployeeHasAssignments = periodAssignments.some((item) => item.employee_id === employee);
-  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(new Date(`${startDate}T00:00:00Z`));
+  const monthDate = new Date(`${startDate || ""}T00:00:00Z`);
+  const safeMonthDate = Number.isNaN(monthDate.getTime()) ? new Date("2026-11-01T00:00:00Z") : monthDate;
+  const monthLabel = new Intl.DateTimeFormat("en-US", { month: "long", year: "numeric", timeZone: "UTC" }).format(safeMonthDate);
   const emptyResult = !savedAssignmentsInMonth
     ? `No saved roster for ${monthLabel}. Save a roster in Roster Planner first.`
     : !selectedEmployeeHasAssignments
