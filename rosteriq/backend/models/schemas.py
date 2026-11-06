@@ -137,7 +137,7 @@ class EmployeeSkillResponse(EmployeeSkillBase):
 # Employee Availability Schemas
 # ---------------------------------------------------------------------------
 class EmployeeAvailabilityBase(RosterIQBaseModel):
-    day_of_week: int = Field(..., ge=0, le=6, description="Day of week (0=Sunday/Monday .. 6)")
+    day_of_week: int = Field(..., ge=0, le=6, description="Day of week (0=Monday .. 6=Sunday)")
     start_time: Optional[str] = Field(None, description="Start time (HH:MM or HH:MM:SS)")
     end_time: Optional[str] = Field(None, description="End time (HH:MM or HH:MM:SS)")
     is_available: Optional[bool] = True

@@ -1,6 +1,7 @@
 import os
 import sys
 import uuid
+from datetime import date
 import pytest
 import psycopg
 from fastapi.testclient import TestClient
@@ -108,6 +109,11 @@ class TestPublicEndpoints:
         assert "/employee-availability" in data["paths"]
         assert "/shifts" in data["paths"]
         assert "/roster-assignments" in data["paths"]
+        assert "/scheduling/generate" in data["paths"]
+        assert "/scheduling/validate" in data["paths"]
+        assert "/scheduling/impact" in data["paths"]
+        assert "/scheduling/coverage-requirements" in data["paths"]
+        assert "/scheduling/operating-rules" in data["paths"]
 
 
 class TestUnauthenticatedAccessRejected:
@@ -127,6 +133,51 @@ class TestUnauthenticatedAccessRejected:
     def test_unauthenticated_requests_return_401(self, path):
         res = client.get(path)
         assert res.status_code in (401, 403), f"Expected 401/403 for {path}, got {res.status_code}"
+
+    @pytest.mark.parametrize("path,payload", [
+        (
+            "/scheduling/generate",
+            {
+                "organization_id": str(uuid.uuid4()),
+                "year": 2026,
+                "month": 11,
+            },
+        ),
+        (
+            "/scheduling/validate",
+            {
+                "organization_id": str(uuid.uuid4()),
+                "year": 2026,
+                "month": 11,
+                "assignments": [],
+            },
+        ),
+        (
+            "/scheduling/impact",
+            {
+                "organization_id": str(uuid.uuid4()),
+                "start_date": "2026-11-01",
+                "end_date": "2026-11-30",
+                "change": {
+                    "change_type": "employee_unavailable",
+                    "employee_id": str(uuid.uuid4()),
+                    "start_date": "2026-11-10",
+                    "end_date": "2026-11-10",
+                },
+            },
+        ),
+    ])
+    def test_scheduling_post_endpoints_require_authentication(self, path, payload):
+        response = client.post(path, json=payload)
+        assert response.status_code in (401, 403)
+
+    @pytest.mark.parametrize("path", [
+        "/scheduling/coverage-requirements",
+        f"/scheduling/organizations/{uuid.uuid4()}/public-holidays",
+    ])
+    def test_scheduling_configuration_requires_authentication(self, path):
+        response = client.get(path)
+        assert response.status_code in (401, 403)
 
 
 class TestCrudLifecycle:
@@ -164,6 +215,17 @@ class TestCrudLifecycle:
 
         res_get_org_b = client.get(f"/organizations/{org_id}", headers=headers_b)
         assert res_get_org_b.status_code == 404
+
+        res_schedule_org_b = client.post(
+            "/scheduling/generate",
+            json={
+                "organization_id": org_id,
+                "year": 2026,
+                "month": 11,
+            },
+            headers=headers_b,
+        )
+        assert res_schedule_org_b.status_code == 404
 
         # 4. Update Organization
         res_patch_org = client.patch(
@@ -344,6 +406,412 @@ class TestCrudLifecycle:
         assert res_check_org.status_code == 404
 
 
+class TestSchedulingConfigurationAndLiveScenarios:
+    def test_authenticated_configuration_crud_and_live_scheduling(
+        self, auth_tokens
+    ):
+        headers_a = auth_tokens["user_a"]["headers"]
+        headers_b = auth_tokens["user_b"]["headers"]
+
+        def request(method, path, *, json=None, headers=headers_a, expected=200):
+            arguments = {"headers": headers}
+            if json is not None:
+                arguments["json"] = json
+            response = getattr(client, method)(path, **arguments)
+            assert response.status_code == expected, (
+                f"{method.upper()} {path}: expected {expected}, "
+                f"got {response.status_code}: {response.text}"
+            )
+            return response.json() if response.content else None
+
+        for existing in request("get", "/organizations"):
+            if existing["name"].startswith("Scheduling Integration "):
+                request("delete", f"/organizations/{existing['id']}")
+
+        org = request("post", "/organizations", json={
+            "name": f"Scheduling Integration {uuid.uuid4().hex[:8]}"
+        }, expected=201)
+        org_id = org["id"]
+
+        brand_single = request("post", "/brands", json={
+            "organization_id": org_id,
+            "name": "Single Resource",
+        }, expected=201)
+        brand_multi = request("post", "/brands", json={
+            "organization_id": org_id,
+            "name": "Multi Resource",
+        }, expected=201)
+
+        process_single = request("post", "/processes", json={
+            "brand_id": brand_single["id"],
+            "name": "Weekday Process",
+        }, expected=201)
+        process_multi = request("post", "/processes", json={
+            "brand_id": brand_multi["id"],
+            "name": "365 Day Process",
+        }, expected=201)
+
+        pod_single = request("post", "/pods", json={
+            "process_id": process_single["id"],
+            "name": "Weekday Pod",
+        }, expected=201)
+        pod_multi = request("post", "/pods", json={
+            "process_id": process_multi["id"],
+            "name": "365 Day Pod",
+        }, expected=201)
+
+        employees = {}
+        for key, first_name in (
+            ("single1", "Single One"),
+            ("single2", "Single Two"),
+            ("multi1", "Multi One"),
+            ("multi2", "Multi Two"),
+        ):
+            code = f"SI-{uuid.uuid4().hex[:8].upper()}"
+            first, _, last = first_name.partition(" ")
+            employees[key] = request("post", "/employees", json={
+                "organization_id": org_id,
+                "employee_code": code,
+                "first_name": first,
+                "last_name": last,
+                "email": f"{code.lower()}@example.com",
+                "employment_type": "full_time",
+                "status": "active",
+                "max_hours_per_week": 40.0,
+                "designation": "Associate",
+            }, expected=201)
+
+        for key, pod in (
+            ("single1", pod_single),
+            ("single2", pod_multi),
+            ("multi1", pod_multi),
+            ("multi2", pod_multi),
+        ):
+            request("post", "/employee-pods", json={
+                "employee_id": employees[key]["id"],
+                "pod_id": pod["id"],
+                "is_primary": True,
+            }, expected=201)
+
+        shift_single = request("post", "/shifts", json={
+            "pod_id": pod_single["id"],
+            "shift_name": "Weekday Shift",
+            "start_time": "09:00:00",
+            "end_time": "10:00:00",
+            "required_headcount": 1,
+        }, expected=201)
+        shift_multi = request("post", "/shifts", json={
+            "pod_id": pod_multi["id"],
+            "shift_name": "365 Day Shift",
+            "start_time": "10:00:00",
+            "end_time": "11:00:00",
+            "required_headcount": 1,
+        }, expected=201)
+
+        request("post", "/scheduling/operating-rules", json={
+            "process_id": process_single["id"],
+            "operating_days": [0],
+            "operates_on_public_holidays": False,
+        }, expected=201)
+        request("put", f"/scheduling/operating-rules/{process_single['id']}", json={
+            "operating_days": [0],
+            "operates_on_public_holidays": False,
+        })
+        assert request(
+            "get",
+            f"/scheduling/processes/{process_single['id']}/operating-rules/current",
+        )["operating_days"] == [0]
+        request("post", "/scheduling/operating-rules", json={
+            "process_id": process_multi["id"],
+            "operating_days": list(range(7)),
+            "operates_on_public_holidays": True,
+        }, expected=201)
+
+        override_date = "2026-11-10"
+        request("post", "/scheduling/operating-overrides", json={
+            "process_id": process_single["id"],
+            "operating_date": override_date,
+            "is_operating": True,
+        }, expected=201)
+        assert request(
+            "get",
+            f"/scheduling/processes/{process_single['id']}/operating-overrides/{override_date}",
+        )["is_operating"]
+        request(
+            "put",
+            f"/scheduling/processes/{process_single['id']}/operating-overrides/{override_date}",
+            json={"is_operating": True},
+        )
+
+        coverage = request("post", "/scheduling/coverage-requirements", json={
+            "process_id": process_single["id"],
+            "shift_id": shift_single["id"],
+            "target_date": "2026-11-02",
+            "minimum_staff": 1,
+        }, expected=201)
+        assert request(
+            "get", f"/scheduling/coverage-requirements/{coverage['id']}"
+        )["minimum_staff"] == 1
+        request(
+            "put",
+            f"/scheduling/coverage-requirements/{coverage['id']}",
+            json={"minimum_staff": 1},
+        )
+
+        holiday_date = "2026-11-08"
+        request(
+            "post",
+            f"/scheduling/organizations/{org_id}/public-holidays",
+            json={"holiday_date": holiday_date, "name": "Integration Holiday"},
+            expected=201,
+        )
+        request(
+            "patch",
+            f"/scheduling/organizations/{org_id}/public-holidays/{holiday_date}",
+            json={"name": "Integration Holiday"},
+        )
+        assert request(
+            "get",
+            f"/scheduling/organizations/{org_id}/public-holidays/{holiday_date}",
+        )["name"] == "Integration Holiday"
+
+        weekly_off_path = (
+            f"/scheduling/employees/{employees['multi2']['id']}/weekly-offs"
+        )
+        request("post", weekly_off_path, json={"day_of_week": 6}, expected=201)
+        assert request("get", weekly_off_path)[0]["day_of_week"] == 6
+        request("put", f"{weekly_off_path}/6", json={"day_of_week": 6})
+
+        time_off_path = f"/scheduling/employees/{employees['multi1']['id']}/time-off"
+        time_off = request("post", time_off_path, json={
+            "start_date": "2026-11-03",
+            "end_date": "2026-11-03",
+            "kind": "leave",
+            "status": "planned",
+            "reason": "Integration test",
+        }, expected=201)
+        time_off_item_path = f"{time_off_path}/{time_off['id']}"
+        assert request("get", time_off_item_path)["status"] == "planned"
+        request("patch", time_off_item_path, json={"status": "approved"})
+        request("put", time_off_item_path, json={"status": "planned"})
+
+        preference_path = (
+            f"/scheduling/employees/{employees['multi1']['id']}/preferences"
+        )
+        preference = request("post", preference_path, json={
+            "process_id": process_multi["id"],
+            "preferred_shift_id": shift_multi["id"],
+            "preferred_days_of_week": [6],
+            "avoid_days_of_week": [],
+        }, expected=201)
+        preference_item_path = f"{preference_path}/{preference['id']}"
+        assert request("get", preference_item_path)["preferred_days_of_week"] == [6]
+        request("patch", preference_item_path, json={
+            "preferred_days_of_week": [5, 6],
+        })
+        comp_off_path = (
+            f"/scheduling/employees/{employees['single2']['id']}/time-off"
+        )
+        comp_off = request("post", comp_off_path, json={
+            "start_date": "2026-11-04",
+            "end_date": "2026-11-04",
+            "kind": "comp_off",
+            "status": "approved",
+            "reason": "Integration test",
+        }, expected=201)
+        comp_off_item_path = f"{comp_off_path}/{comp_off['id']}"
+        assert request("get", comp_off_item_path)["status"] == "approved"
+
+        # A second authenticated manager cannot read or configure this tenant's data.
+        request(
+            "get",
+            f"/scheduling/processes/{process_single['id']}/operating-rules/current",
+            headers=headers_b,
+            expected=404,
+        )
+        request(
+            "get",
+            f"/scheduling/coverage-requirements/{coverage['id']}",
+            headers=headers_b,
+            expected=404,
+        )
+        request(
+            "get",
+            f"/scheduling/organizations/{org_id}/public-holidays",
+            headers=headers_b,
+            expected=404,
+        )
+        request(
+            "post",
+            "/scheduling/operating-rules",
+            headers=headers_b,
+            json={
+                "process_id": process_single["id"],
+                "operating_days": [0],
+                "operates_on_public_holidays": False,
+            },
+            expected=404,
+        )
+
+        generated = request("post", "/scheduling/generate", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+        })
+        assert generated["is_valid"]
+        assignments = generated["assignments"]
+        single_nov2 = next(
+            assignment for assignment in assignments
+            if assignment["process_id"] == process_single["id"]
+            and assignment["assignment_date"] == "2026-11-02"
+        )
+        multi_assignment = next(
+            assignment for assignment in assignments
+            if assignment["process_id"] == process_multi["id"]
+            and assignment["assignment_date"] == "2026-11-04"
+        )
+        assert not any(
+            assignment["employee_id"] == employees["multi1"]["id"]
+            and assignment["assignment_date"] == "2026-11-03"
+            for assignment in assignments
+        )
+        assert not any(
+            assignment["employee_id"] == employees["multi2"]["id"]
+            and date.fromisoformat(assignment["assignment_date"]).weekday() == 6
+            for assignment in assignments
+        )
+        multi_coverage = [
+            row for row in generated["coverage_summary"]
+            if row["process_id"] == process_multi["id"]
+        ]
+        assert len(multi_coverage) == 30
+        assert any(row["date"] == "2026-11-08" for row in multi_coverage)
+        assert any(row["date"] == "2026-11-01" for row in multi_coverage)
+        assert any(
+            row["process_id"] == process_single["id"]
+            and row["date"] == override_date
+            for row in generated["coverage_summary"]
+        )
+
+        validated = request("post", "/scheduling/validate", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+            "assignments": assignments,
+        })
+        assert validated["is_valid"]
+
+        invalid_assignments = [dict(assignment) for assignment in assignments]
+        assignment_index = next(
+            index for index, assignment in enumerate(invalid_assignments)
+            if assignment["employee_id"] == single_nov2["employee_id"]
+            and assignment["shift_id"] == single_nov2["shift_id"]
+            and assignment["assignment_date"] == "2026-11-02"
+        )
+        invalid_assignments[assignment_index]["employee_id"] = str(uuid.uuid4())
+        invalid_manual = request("post", "/scheduling/validate", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+            "assignments": invalid_assignments,
+        })
+        assert not invalid_manual["is_valid"]
+
+        # Validate before saving manual assignments through the existing roster API.
+        request("post", "/roster-assignments", json={
+            "employee_id": single_nov2["employee_id"],
+            "shift_id": single_nov2["shift_id"],
+            "assignment_date": "2026-11-02",
+            "status": "scheduled",
+        }, expected=201)
+        request("post", "/roster-assignments", json={
+            "employee_id": multi_assignment["employee_id"],
+            "shift_id": multi_assignment["shift_id"],
+            "assignment_date": "2026-11-04",
+            "status": "scheduled",
+        }, expected=201)
+
+        single_impact = request("post", "/scheduling/impact", json={
+            "organization_id": org_id,
+            "start_date": "2026-11-02",
+            "end_date": "2026-11-02",
+            "change": {
+                "change_type": "employee_unavailable",
+                "employee_id": single_nov2["employee_id"],
+                "start_date": "2026-11-02",
+                "end_date": "2026-11-02",
+            },
+        })
+        assert len(single_impact["invalidated_assignments"]) == 1
+        assert not single_impact["replacement_assignments"]
+        assert single_impact["invalidated_assignments"][0][
+            "possible_backup_employee_ids"
+        ] == []
+        assert single_impact["invalidated_assignments"][0]["suggested_resolution"]
+        assert any(
+            row["process_id"] == process_single["id"]
+            and row["date"] == "2026-11-02"
+            and row["unfilled_positions"]
+            for row in single_impact["unfilled_positions"]
+        )
+
+        multi_impact = request("post", "/scheduling/impact", json={
+            "organization_id": org_id,
+            "start_date": "2026-11-04",
+            "end_date": "2026-11-04",
+            "change": {
+                "change_type": "employee_unavailable",
+                "employee_id": multi_assignment["employee_id"],
+                "start_date": "2026-11-04",
+                "end_date": "2026-11-04",
+            },
+        })
+        assert len(multi_impact["invalidated_assignments"]) == 1
+        assert multi_impact["replacement_assignments"]
+        assert multi_impact["replacement_assignments"][0]["employee_id"] in {
+            employees["multi1"]["id"], employees["multi2"]["id"]
+        } - {multi_assignment["employee_id"]}
+
+        # Persist an availability restriction after generation and revalidate the proposal.
+        availability = request("post", "/employee-availability", json={
+            "employee_id": single_nov2["employee_id"],
+            "day_of_week": 0,
+            "is_available": False,
+        }, expected=201)
+        assert availability["is_available"] is False
+        revalidated = request("post", "/scheduling/validate", json={
+            "organization_id": org_id,
+            "year": 2026,
+            "month": 11,
+            "assignments": assignments,
+        })
+        assert not revalidated["is_valid"]
+        assert any(
+            conflict["conflict_type"] == "employee_unavailable"
+            for conflict in revalidated["conflicts"]
+        )
+
+        request(
+            "delete",
+            preference_item_path,
+        )
+        request("delete", time_off_item_path)
+        request("delete", comp_off_item_path)
+        request("delete", f"{weekly_off_path}/6")
+        request(
+            "delete",
+            f"/scheduling/organizations/{org_id}/public-holidays/{holiday_date}",
+        )
+        request("delete", f"/scheduling/coverage-requirements/{coverage['id']}")
+        request(
+            "delete",
+            f"/scheduling/processes/{process_single['id']}/operating-overrides/{override_date}",
+        )
+        request("delete", f"/scheduling/operating-rules/{process_single['id']}")
+        request("delete", f"/scheduling/operating-rules/{process_multi['id']}")
+        request("delete", f"/organizations/{org_id}")
+
+
 class TestValidationAndIntegrity:
     def test_invalid_email_format(self, auth_tokens):
         headers = auth_tokens["user_a"]["headers"]
@@ -407,4 +875,3 @@ class TestValidationAndIntegrity:
             headers=headers
         )
         assert res.status_code == 422
-

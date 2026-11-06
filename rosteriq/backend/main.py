@@ -14,6 +14,8 @@ from routers.employee_availability import router as employee_availability_router
 from routers.shifts import router as shifts_router
 from routers.roster_assignments import router as roster_assignments_router
 from routers.employee_pods import router as employee_pods_router
+from routers.scheduling import router as scheduling_router
+from routers.scheduling_config import router as scheduling_config_router
 
 app = FastAPI(
     title="RosterIQ API",
@@ -22,6 +24,7 @@ app = FastAPI(
         "Features:\n"
         "- Full CRUD endpoints for Organizations, Brands, Processes, Pods, Employees, "
         "Skills, Availability, Shifts, and Roster Assignments.\n"
+        "- Constraint-based monthly roster proposals, validation, and impact analysis.\n"
         "- Multi-tenant data isolation respecting Supabase Row Level Security (RLS).\n"
         "- JWT-based Manager authentication via Supabase Auth.\n"
         "- Foreign-key integrity validation and clear error responses."
@@ -53,6 +56,8 @@ app.include_router(employee_availability_router)
 app.include_router(shifts_router)
 app.include_router(roster_assignments_router)
 app.include_router(employee_pods_router)
+app.include_router(scheduling_router)
+app.include_router(scheduling_config_router)
 
 @app.get("/", tags=["System"], summary="API Root")
 def root():
