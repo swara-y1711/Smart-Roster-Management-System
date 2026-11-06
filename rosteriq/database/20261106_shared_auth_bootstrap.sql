@@ -14,6 +14,7 @@ declare
   candidate record;
   candidate_count integer;
   selected_organization uuid;
+  source_organizations uuid[];
 begin
   for candidate in
     select o.id, o.name, count(e.id)::integer as employee_count
@@ -26,28 +27,56 @@ begin
       candidate.id, candidate.name, candidate.employee_count;
   end loop;
 
-  select o.id
-    into selected_organization
-    from public.organizations o
-    left join public.employees e on e.organization_id = o.id
-   group by o.id, o.created_at
-   order by count(e.id) desc, o.created_at asc, o.id asc
-   limit 1;
-
-  if selected_organization is null then
+  select count(*) into candidate_count
+    from public.organizations;
+  if candidate_count = 0 then
     raise exception 'Cannot configure RosterIQ shared organization: no organizations exist.';
   end if;
 
-  select count(*) into candidate_count
-    from public.organizations;
-  if candidate_count > 1 then
-    raise notice 'Using organization % with the most seeded employees as the shared workspace.',
-      selected_organization;
+  -- The deterministic repository seed contains 50 employees across five
+  -- source organizations. Consolidate those known sample organizations into
+  -- one workspace so the application sees one 50-employee dataset.
+  select coalesce(array_agg(o.id), '{}'::uuid[])
+    into source_organizations
+    from public.organizations o
+   where o.name in (
+     'Hinton-Johnson',
+     'Wilson-Foster',
+     'Pearson-Bradley',
+     'Martin-Reed',
+     'Ramirez, Rogers and Cooper'
+   );
+
+  select id into selected_organization
+    from public.organizations
+   where name = 'RosterIQ Shared Sample'
+   order by created_at asc, id asc
+   limit 1;
+
+  if selected_organization is null then
+    insert into public.organizations (name)
+    values ('RosterIQ Shared Sample')
+    returning id into selected_organization;
   end if;
+
+  if cardinality(source_organizations) > 0 then
+    update public.brands
+       set organization_id = selected_organization
+     where organization_id = any(source_organizations);
+
+    update public.employees
+       set organization_id = selected_organization
+     where organization_id = any(source_organizations);
+  end if;
+
+  raise notice 'Using consolidated organization % as the shared workspace.',
+    selected_organization;
 
   insert into public.app_settings (key, value)
   values ('rosteriq.shared_organization_id', selected_organization::text)
-  on conflict (key) do nothing;
+  on conflict (key) do update
+    set value = excluded.value,
+        updated_at = now();
 end;
 $$;
 
