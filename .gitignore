@@ -1,6 +1,6 @@
-
 # Environment variables and secrets
 .env
+.env.local
 .env.*
 !.env.example
 **/.env
@@ -70,3 +70,4 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+!rosteriq/frontend/.env.example

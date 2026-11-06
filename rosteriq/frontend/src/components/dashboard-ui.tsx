@@ -15,8 +15,8 @@ import {
   FileDown,
   LayoutDashboard,
   LayoutGrid,
+  LogOut,
   Menu,
-  MoreVertical,
   Network,
   Plus,
   RefreshCw,
@@ -32,6 +32,8 @@ import {
   Workflow,
   type LucideIcon,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useAuth } from "@/components/auth-provider";
 
 export type DashboardSection =
   | "Dashboard"
@@ -105,10 +107,16 @@ function Sidebar({
   activeSection,
   isOpen,
   onClose,
+  profileName,
+  profileEmail,
+  onSignOut,
 }: {
   activeSection: DashboardSection;
   isOpen: boolean;
   onClose: () => void;
+  profileName: string;
+  profileEmail: string;
+  onSignOut: () => void;
 }) {
   return (
     <>
@@ -185,18 +193,26 @@ function Sidebar({
             ))}
           </nav>
         </div>
-        <button className="mt-5 flex items-center justify-between rounded-xl bg-[#283044]/80 p-3 text-left hover:bg-[#343e56]">
+        <div className="mt-5 flex items-center justify-between gap-2 rounded-xl bg-[#283044]/80 p-3">
           <span className="flex items-center gap-3">
             <span className="flex h-9 w-9 items-center justify-center rounded-full bg-[#3525cd]">
               <UserRound aria-hidden="true" className="h-[18px] w-[18px]" />
             </span>
-            <span>
-              <span className="block text-[13px] font-semibold">Workspace User</span>
-              <span className="block text-[11px] text-[#c7c9d8]">Operations</span>
+            <span className="min-w-0">
+              <span className="block truncate text-[13px] font-semibold">{profileName}</span>
+              <span className="block max-w-[130px] truncate text-[11px] text-[#c7c9d8]">{profileEmail}</span>
             </span>
           </span>
-          <MoreVertical aria-hidden="true" className="h-[18px] w-[18px] text-[#dae2fd]" />
-        </button>
+          <button
+            aria-label="Log out"
+            className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg text-[#dae2fd] hover:bg-[#343e56] hover:text-white"
+            onClick={onSignOut}
+            title="Log out"
+            type="button"
+          >
+            <LogOut aria-hidden="true" className="h-[18px] w-[18px]" />
+          </button>
+        </div>
       </aside>
     </>
   );
@@ -210,6 +226,29 @@ export function DashboardShell({
   children: ReactNode;
 }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [signOutError, setSignOutError] = useState("");
+  const router = useRouter();
+  const { client, user, profile, profileError } = useAuth();
+
+  async function handleSignOut() {
+    if (!client) {
+      setSignOutError("Supabase is not configured.");
+      return;
+    }
+
+    try {
+      const { error } = await client.auth.signOut();
+      if (error) {
+        setSignOutError(error.message);
+        return;
+      }
+      router.replace("/login");
+    } catch (error: unknown) {
+      setSignOutError(
+        error instanceof Error ? error.message : "Unable to log out of your account.",
+      );
+    }
+  }
 
   return (
     <div className="min-h-screen bg-[#faf8ff] text-[#131b2e]">
@@ -217,6 +256,9 @@ export function DashboardShell({
         activeSection={activeSection}
         isOpen={sidebarOpen}
         onClose={() => setSidebarOpen(false)}
+        onSignOut={() => void handleSignOut()}
+        profileEmail={profile?.work_email ?? user?.email ?? "Operations Manager"}
+        profileName={profile?.full_name ?? "Operations Manager"}
       />
       <header className="fixed left-0 right-0 top-0 z-30 flex h-16 items-center justify-between gap-4 bg-white/95 px-4 shadow-[0_1px_8px_rgba(0,0,0,0.04)] backdrop-blur-xl lg:left-[248px] lg:px-7">
         <div className="flex min-w-0 items-center gap-2 text-[14px] text-[#464555]">
@@ -264,7 +306,17 @@ export function DashboardShell({
         </div>
       </header>
       <main className="min-h-screen pt-16 lg:pl-[248px]">
-        <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8 xl:p-10">{children}</div>
+        <div className="mx-auto max-w-[1600px] p-4 sm:p-6 lg:p-8 xl:p-10">
+          {(profileError || signOutError) && (
+            <p
+              className="mb-5 rounded-xl bg-[#ffdad6] px-4 py-3 text-sm text-[#93000a]"
+              role="alert"
+            >
+              {signOutError || `Unable to retrieve your manager profile: ${profileError}`}
+            </p>
+          )}
+          {children}
+        </div>
       </main>
     </div>
   );
